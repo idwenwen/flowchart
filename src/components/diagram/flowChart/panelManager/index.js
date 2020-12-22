@@ -60,21 +60,6 @@ class PanelManager {
   ) {
     return this.panelSetting(width, height, point, style, transform, classes)
   }
-
-  getPos (panel) {
-    return [
-      parseFloat(panel.style.get('left')),
-      parseFloat(panel.style.get('top'))
-    ]
-  }
-
-  getWidth (panel) {
-    return panel.attrs.get('width')
-  }
-
-  getHeight (panel) {
-    return panel.attrs.get('height')
-  }
 }
 
 export default PanelManager
