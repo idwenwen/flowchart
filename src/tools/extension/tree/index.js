@@ -1,7 +1,7 @@
-import { toArray, isArray, remove } from 'lodash'
-import { UUID } from '../../uuid/index'
-import { each } from './iteration'
-import { defNoEnum } from './define'
+import { isArray, remove } from 'lodash'
+import UUID from '../../uuid/index'
+import { toArray, each } from '../iteration'
+import { defNoEnum } from '../define'
 
 // 当前树状图对象的唯一标识
 const treeId = new UUID((index) => `Tree_${index}`)
@@ -16,9 +16,9 @@ class Tree {
     // 当前属性不可遍历
     defNoEnum(this, {
       _uuid: id || treeId.get(), // 用户可以提供特定的表示内容
-      parent: parent || null,
-      children: children ? toArray(children) : [],
-      level: parent.level ? parent.level + 1 : 1
+      _parent: parent || null,
+      _children: children ? toArray(children) : [],
+      level: parent && parent.level ? parent.level + 1 : 1
     })
   }
 
@@ -36,7 +36,7 @@ class Tree {
 
   /** ************************父子节点关系设置 ***********************/
   // 对父节点的设置函数
-  set parent (newParent) {
+  setParent (newParent) {
     // 如果当前节点由原父节点内容,原父节点删除当前子节点.
     this._parent && this._parent.remove(this)
 
@@ -49,35 +49,35 @@ class Tree {
     // 重新计算当前子节点的层级信息
     this.setLevel()
   }
-  get parent () {
+  getParent () {
     return this._parent
   }
 
   // 孩子节点设置
-  set child (newChild) {
+  setChild (newChild) {
     // 通过当前子节点的父节点设置来达到相关联的目的
-    newChild.parent = this
+    newChild.setParent(this)
   }
-  get child () {
+  getChild () {
     // 获取最新的新的孩子节点
-    return this._children[this._children.length - 1]
+    return isArray(this._children) ? this._children[this._children.length - 1] : null
   }
-  get first () {
+  getFirst () {
     // 获取首个孩子节点
     return this._children[0]
   }
 
   // 设置新的多个孩子节点
-  set children (newChildren) {
+  setChildren (newChildren) {
     if (isArray(newChildren)) {
       each(newChildren)((val) => {
-        val.child = this
+        val.setChild(this)
       })
     } else {
-      this.child = newChildren
+      this.setChild(newChildren)
     }
   }
-  get children () {
+  getChildren () {
     // 查看多有的孩子节点
     return this._children
   }
@@ -92,8 +92,8 @@ class Tree {
   root (level = 1) {
     let rot = this
     // 由父节点并且父节点的层级大于等于预设层级的话将会进入循环
-    while (this.parent && this.parent.level >= level) {
-      rot = this.parent
+    while (rot.getParent() && rot.getParent().level >= level) {
+      rot = rot.getParent()
     }
     return rot
   }
@@ -113,7 +113,7 @@ class Tree {
       }
     }
     const parent = this.root(finalLevel - 1)
-    this.parent = parent
+    this.setParent(parent)
   }
 
   // 查询子层级节点内容
@@ -129,7 +129,7 @@ class Tree {
     }
     // 查询相关层级的子孙节点内容.
     const list = []
-    for (const val of this.children) {
+    for (const val of this.getChildren()) {
       list.push(...val.find(down - 1))
     }
     return list
@@ -139,7 +139,7 @@ class Tree {
     let node = opera(this) ? this : null
     if (node) return node
     else {
-      for (const val of this.children) {
+      for (const val of this.getChildren()) {
         node = val.findChild(opera)
         if (node) return node
       }
@@ -160,11 +160,11 @@ class Tree {
   // 获取所有的叶子节点
   leaf () {
     // 当前系欸但如果没有子节点,则自身为叶子节点
-    if (this.children.length === 0) {
+    if (this.getChildren().length === 0) {
       return [this]
     }
     const leafs = []
-    each(this.children)((val) => {
+    each(this.getChildren())((val) => {
       leafs.push(...val.leaf())
     })
     return leafs
@@ -178,7 +178,7 @@ class Tree {
     })
   }
 
-  /** *****************************树状图的常规操作 **********************/
+  /** *****************************树状图的常规操作********************************/
   // 树状图深度遍历 从当前节点开始.
   *deepIterator (reverse = false) {
     if (!reverse) {
@@ -199,12 +199,12 @@ class Tree {
     if (!upper) {
       // 获取所有下一层的节点内容.
       each(list)((val) => {
-        nodes.push(...val.children)
+        nodes.push(...val.getChildren())
       })
     } else {
       // 获取所有上一层及的节点.
       each(list)((val) => {
-        const pa = val.parent
+        const pa = val.getParent()
         if (!nodes.find((item) => pa._uuid === item.uuid)) {
           nodes.push(pa)
         }
@@ -258,6 +258,8 @@ class Tree {
       for (const val of iter) {
         operation.call(val, val)
       }
+    } catch (err) {
+      void 0
     } finally {
       void 0
     }

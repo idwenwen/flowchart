@@ -1,8 +1,9 @@
-import { each } from '../../../tools/extension/iteration'
+import { each, toArray } from '../../../tools/extension/iteration'
 import { Exception } from '../../../tools/exception'
-import { isObject, isString, isFunction, toArray } from 'lodash'
+import { isObject, isString, isFunction } from 'lodash'
 import Brushing from '../brush/index'
 import { defNoEnum } from '../../../tools/extension/define'
+import { pathList } from '../path'
 
 /**
  * 绘制路径实例，存储用户对于绘制路径的设置。
@@ -52,7 +53,7 @@ class DrawPath {
   // drawPath: 可以是string, 绘制函数，或者是{path: 绘制函数，param: 参数过滤条件}
   constructor (drawPath) {
     // 存储一份原始样本，方便之后数据设置的时候的对比。
-    defNoEnum(this, '_origin', drawPath)
+    defNoEnum(this, '_origin', '')
     this.setPath(drawPath)
   }
 
@@ -95,5 +96,13 @@ class DrawPath {
     return this.drawPath.path
   }
 }
+
+function initDefaultPaths () {
+  each(pathList)((val) => {
+    DrawPath.set(val.name, val.draw)
+  })
+}
+
+initDefaultPaths()
 
 export default DrawPath

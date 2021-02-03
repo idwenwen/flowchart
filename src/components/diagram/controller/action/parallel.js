@@ -1,6 +1,6 @@
 import { toAction } from './action'
-import { toArray, eq, remove } from 'lodash'
-import { each } from '../../../../tools/extension/iteration'
+import { eq, remove } from 'lodash'
+import { each, toArray } from '../../../../tools/extension/iteration'
 import Player from './player'
 
 class Parallel extends Player {
@@ -11,24 +11,31 @@ class Parallel extends Player {
     this.add(parallel)
   }
 
-  set context (newContent) {
-    super.context = newContent
+  setContext (newContent) {
+    super.setContext(newContent)
     // 所有子动作的内容也将会设置上下文。
     each(this.list)((play) => {
-      play.context = this._context
+      play.action.setContext(this._context)
     })
   }
 
   // 添加并行动作内容。
   add (para, once = false) {
+    const _t = this
     if (Array.isArray(para)) {
-      each(para)((action) => {
-        this.add(action, once)
+      each(para)(function (action) {
+        _t.add(action, once)
       })
     } else {
-      para.context = this.context
+      let origin = para
+      if (para instanceof Player) {
+        para.setContext(this.getContext())
+      } else {
+        para.context = this.getContext()
+        origin = toAction(para)
+      }
       this.list.push({
-        action: para instanceof Player ? para : toAction(para),
+        action: origin,
         once
       })
     }
@@ -41,12 +48,13 @@ class Parallel extends Player {
 
   // 运行当前帧动作。
   act (...meta) {
+    const _t = this
     let player = null
     return super.loading(
       (current) => {
         if (!player) {
           player = []
-          each(this.list)((act) => {
+          each(_t.list)((act) => {
             player.push(act.act(...meta))
           })
         }

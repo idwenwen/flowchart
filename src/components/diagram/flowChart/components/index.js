@@ -1,5 +1,5 @@
-import { each, Exception } from '@cc/tools'
-import { config } from './config'
+import { each } from '@/tools/extension/iteration'
+import { Exception } from '@/tools/exception'
 import Content from './content'
 import PanelManager from '../panelManager'
 import Ports from './ports'
@@ -7,8 +7,9 @@ import Diagram from '../../diagram'
 import PanelOperation from '../panelManager/panelOperation'
 import SubCompManager from '../subCompManager'
 import { getPos } from '../utils'
-import { getCurrentLink, linkingFail } from '../canvas'
+import { getMainCanvas, linkingFail, setChoosen } from '../canvas'
 import { flatten } from 'lodash'
+import { toArray } from '../../../../tools/extension/iteration'
 
 // 组件状态
 export const ComponentsStatus = {
@@ -25,9 +26,8 @@ export const Role = {
 }
 
 function checkLinking (comp) {
-  const res = []
+  const res = [comp.name]
   each(comp.into)(val => {
-    const res = []
     res.push(val.from.name)
     res.push(...checkLinking(val.from))
   })
@@ -53,6 +53,26 @@ class GlobalComponentsManage {
 
   get (name) {
     return this.comps.get(name)
+  }
+
+  getValue (name, operation) {
+    operation && operation(toArray(this.get(name)))
+  }
+
+  find (operation) {
+    let find = false
+    each(this.comps)(val => {
+      each(toArray(val))(item => {
+        if (operation(item)) {
+          find = item
+          throw new Exception('BreakingException', 'Ending iteration', Exception.level.Warn)
+        }
+      })
+      if (find) {
+        throw new Exception('BreakingException', 'Ending iteration', Exception.level.Warn)
+      }
+    })
+    return find
   }
 }
 
@@ -85,7 +105,8 @@ class Components extends PanelOperation {
     this.name = name || globalComponents.getDefaultName(type)
     this.type = type
 
-    this.status = this.matchStatus(status)
+    this.firstTimeToStatus = status
+    this.status = this.matchStatus('unrun')
     this.role = this.matchRole(role)
 
     this.disable = disable
@@ -93,24 +114,68 @@ class Components extends PanelOperation {
 
     this.allSingleType = allSingleType
     this.panelManager = null
-    this.into = new Map() // 连接进入Linking[]，相关内容为接口Figure对象。
-    this.outto = new Map() // 连接输出Linking[]，相关内容为接口Figure对象。
+    this.into = {} // 连接进入Linking[]，相关内容为接口Figure对象。
+    this.outto = {} // 连接输出Linking[]，相关内容为接口Figure对象。
     this.subConnect = new SubCompManager()
+    this.checkedLinkFrom = false
     globalComponents.set(this.type, this)
 
     // 当前组件状态记录
     this.isChoosing = false // 是否被选中的状态
     this.choosePoisiton = null
     this.currentPort = null
+    this.accordingToWholePos = null
     this.isMoveing = false // 当前正在移动状态
+    this.saved = false
 
     this.flowPanel = null
   }
 
-  flowPanel (panel) {
+  getComponentInfo () {
+    const res = {
+      name: this.name,
+      module: this.type,
+      status: this.status,
+      disable: this.disable,
+      position: (() => {
+        const origin = this.panelManager.attrs.point
+        const width = this.panelManager.attrs.width
+        const height = this.panelManager.attrs.height
+        return [
+          (origin[0] + width / 2).toFixed(2),
+          (origin[1] + height / 2).toFixed(2)
+        ]
+      })(),
+      width: this.panelManager.attrs.width,
+      height: this.panelManager.attrs.height
+    }
+    const dependency = {}
+    if (Object.keys(this.outto).length > 0) {
+      each(this.outto)(function (linkings, type) {
+        dependency[type] = []
+        each(linkings)(function (link) {
+          dependency[type].push({
+            componentName: link.end.name,
+            from: (() => {
+              const origin = link.fromPort.name.split('_')[0]
+              return origin.split('|')
+            })(),
+            to: (() => {
+              const origin = link.endPort.name.split('_')[0]
+              return origin.split('|')
+            })()
+          })
+        })
+      })
+    }
+    res.dependency = dependency
+    return res
+  }
+
+  setflowPanel (panel) {
     this.flowPanel = panel
     if (this.panelManager) {
-      this.flowPanel.addComp(this.panelManager.dom)
+      this.flowPanel.append(this.panelManager.dom)
     }
   }
 
@@ -150,40 +215,68 @@ class Components extends PanelOperation {
   }
 
   toEvents () {
+    const _t = this
     return {
-      choose: {
-        variation: () => { this.choosed = true },
-        time: 0
+      isSaving () {
+        _t.saved = false
+        this.saved = false
       },
-      disable: {
-        variation: () => { this.disable = true },
-        time: 0
+      hasSave () {
+        _t.saved = true
+        this.saved = true
       },
-      able: {
-        variation: () => { this.disable = false },
-        time: 0
+      choose () {
+        _t.choosed = true
+        this.choosed = true
       },
-      toStatus: {
-        variation: (progress, status) => {
-          if (progress >= 1) {
-            this.status = status
-            // 依据当前的运行状态判定是否添加相关的辅助组件。
-          }
-        },
-        time: 600
+      unchoose () {
+        _t.choosed = false
+        this.choosed = false
+      },
+      disable () {
+        _t.disable = true
+        this.disable = true
+      },
+      able () {
+        _t.disable = false
+        this.disable = false
+      },
+      toStatus (status) {
+        if (_t.status === ComponentsStatus.running) {
+          _t.diagram.animationFinish('loading')
+        }
+        _t.status = status
+        this.status = status
+        if (status === ComponentsStatus.running) {
+          _t.diagram.animateDispatch('loading')
+        }
+      },
+      changeStatus (status) {
+        const newStatus = _t.matchStatus(status)
+        _t.diagram.animateDispatch('toStatus', newStatus)
       }
     }
   }
 
   toSetting () {
+    const _t = this
+    this.borderContent = new Content(this)
+    this.borderPorts = new Ports(this.type, this.allSingleType, this.role, this)
     return {
-      parameter: {
-        name: this.name,
+      data: {
+        name () {
+          return _t.name
+        },
+        saved () {
+          return _t.saved
+        },
         width () {
-          return parseFloat(this.attrs.width) * (1 - config.panelBorder)
+          return parseFloat(this.attrs.width) - 10 * 2
         },
         height () {
-          return parseFloat(this.attrs.height) * (1 - config.panelBorder)
+          let portW = parseFloat(this.attrs.width) * 0.02
+          portW = (portW < 12 ? 12 : portW) + 1
+          return parseFloat(this.attrs.height) - portW * 2
         },
         radius () {
           const times = 0.005
@@ -199,9 +292,15 @@ class Components extends PanelOperation {
                 : radius
           return radius
         },
-        choosed: this.choosed,
-        status: this.status,
-        disable: this.disable,
+        choosed () {
+          return _t.choosed
+        },
+        status () {
+          return _t.status
+        },
+        disable () {
+          return _t.disable
+        },
         center () {
           return [
             parseFloat(this.attrs.width) / 2,
@@ -209,9 +308,10 @@ class Components extends PanelOperation {
           ]
         }
       },
+      events: this.toEvents(),
       children: [
-        new Content(this).toSetting(),
-        new Ports(this.type, this.allSingleType, this.role, this).toSetting()
+        this.borderContent.toSetting(),
+        this.borderPorts.toSetting()
       ]
     }
   }
@@ -220,80 +320,106 @@ class Components extends PanelOperation {
     const _t = this
     let inPath = null
     let lastPoint = null
-    let checkedLinkFrom = false
     const panel = new PanelManager().toSetting(width, height, point)
     panel.events = {
-      'mousedown': (eve) => {
+      'mousedown': function (eve) {
         _t.isChoosing = true
         _t.currentPort = null
         _t.isMoveing = false
         _t.choosePoisiton = getPos(eve)
+        _t.accordingToWholePos = getPos(eve, getMainCanvas().container)
         eve.stopPropagation()
       },
-      'mouseMoving': (eve) => {
+      'mousemove': function (eve) {
         const pos = getPos(eve)
         if (_t.isChoosing && (pos[0] !== _t.choosePoisiton[0] || pos[1] !== _t.choosePoisiton[1])) {
+          const posForWhole = getPos(eve, getMainCanvas().container)
           // 坐标不同表示移动了。
-          _t.isMoving = true
+          _t.isMoveing = true
           // 判定当前是否有连出操作
-          if (!checkedLinkFrom) {
-            _t.diagram.animateDispatch('linkFrom', _t.choosePoisiton, pos)
-            checkedLinkFrom = true
+          if (!_t.checkedLinkFrom) {
+            _t.diagram.dispatchEvents('linkFrom', eve, _t.choosePoisiton, _t.accordingToWholePos, posForWhole)
+            _t.checkedLinkFrom = true
           }
-          if (!_t.currentPort) {
+          if (_t.currentPort === false) {
             // 移动当前的组件展示位置。
             if (inPath === null) inPath = _t.diagram.isPointInFigure(_t.choosePoisiton)
             if (inPath) {
-              if (!lastPoint) lastPoint = _t.choosePoisiton
+              if (!lastPoint) lastPoint = _t.accordingToWholePos
               // 计算当前panel的移动。
-              _t.panelManager.translate(pos[0] - lastPoint[0], pos[1] - lastPoint[1])
-              lastPoint = pos
+              const xDistance = posForWhole[0] - lastPoint[0]
+              const yDistance = posForWhole[1] - lastPoint[1]
+              const origin = _t.panelManager.attrs.point
+              _t.panelManager.attrs.point = [
+                origin[0] + xDistance,
+                origin[1] + yDistance
+              ]
+              lastPoint = posForWhole
               // 通知所有的linking修改相关的数值内容。
+              each(_t.outto)(function (val) {
+                each(val)(function (item) {
+                  item.translateStart(xDistance, yDistance)
+                })
+              })
+              each(_t.into)(function (val) {
+                each(val)(function (item) {
+                  item.translateEnd(xDistance, yDistance)
+                })
+              })
             }
           }
         }
       },
-      'mouseup': (eve) => {
+      'mouseup': function (eve) {
         // 表示鼠标在当前component之中放开的情况。
         eve.stopPropagation()
         if (_t.currentPort) {
           linkingFail()
-        } else if (getCurrentLink()) {
-          // 如果连线连接到当前的组件之中, 触发当前的hint之中的事件
-          _t.diagram.animateDispatch('linkInto', getPos(eve))
         }
         _t.isChoosing = false
         _t.currentPort = null
         _t.choosePoisiton = null
-        checkedLinkFrom = false
+        _t.checkedLinkFrom = false
         lastPoint = null
         inPath = null
       },
-      'mouseout': () => {
+      'mouseout': function () {
+        _t.isChoosing = false
+        _t.checkedLinkFrom = false
         lastPoint = null
         inPath = null
       },
-      'click': (eve) => {
-        if (!_t.isMoveing && this.isPointInFigure(getPos(eve))) {
-          _t.choosed = true
+      'click': function (eve) {
+        if (!_t.isMoveing && this.diagram.isPointInFigure(getPos(eve))) {
+          setChoosen(_t)
         }
-        this.isMoveing = false
+        _t.isMoveing = false
       }
     }
     return panel
   }
 
+  clickedUpper (eve) {
+    if (this.diagram.isPointInFigure(getPos(eve))) {
+      setChoosen(this)
+    }
+  }
+
   linkOut (Linking) {
-    const index = this.outto.findIndex(item => item.uuid === Linking.uuid)
+    const fromPort = Linking.fromPort
+    this.outto[fromPort.type] = this.outto[fromPort.type] || []
+    const index = this.outto[fromPort.type].findIndex(item => item.uuid === Linking.uuid)
     if (index < 0) {
-      this.outto.push(Linking)
+      this.outto[fromPort.type].push(Linking)
     }
   }
 
   linkIn (Linking) {
-    const index = this.into.findIndex(item => item.uuid === Linking.uuid)
+    const endPort = Linking.endPort
+    this.into[endPort.type] = this.into[endPort.type] || []
+    const index = this.into[endPort.type].findIndex(item => item.uuid === Linking.uuid)
     if (index < 0) {
-      this.into.push(Linking)
+      this.into[endPort.type].push(Linking)
     }
   }
 
@@ -303,17 +429,19 @@ class Components extends PanelOperation {
     this.diagram = new Diagram(panelSetting, diagramSetting)
     this.panelManager = this.diagram.panel
     if (this.flowPanel) {
-      this.flowPanel.addComp(this.panelManager.dom)
+      this.flowPanel.append(this.panelManager.dom)
     }
+    this.diagram.dispatchEvents('changeStatus', this.firstTimeToStatus)
   }
 
-  checkHint (type) {
+  checkHint (eve, type) {
     // 获取关联关系check哪一些是可以进行连接测试的，哪一些不行
     // 通过全局component判断剩余组件是否可以触发portHint事件。
     const notHint = checkLinking(this)
     each(globalComponents.comps)((val, key) => {
       if (!notHint.find(item => item === val.name)) {
-        val.diagram.animateDispatch('linkHint', type)
+        // val.diagram.animateDispatch('linkHint', type)
+        val.diagram.dispatchEvents('linkHint', eve, type)
       }
     })
   }
@@ -321,12 +449,15 @@ class Components extends PanelOperation {
   hintFinished () {
     // 表示当前的提示阶段已经结束。
     // 结束所有的hint内容。
-    const notHint = checkLinking(this)
-    each(globalComponents.comps)((val, key) => {
-      if (!notHint.find(item => item === val.name)) {
-        val.diagram.animateDispatch('linkHide')
-      }
-    })
+    checkLinking(this)
+  }
+
+  choose () {
+    this.diagram.dispatchEvents('choose')
+  }
+
+  unchoose () {
+    this.diagram.dispatchEvents('unchoose')
   }
 }
 

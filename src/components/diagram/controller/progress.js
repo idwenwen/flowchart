@@ -53,7 +53,7 @@ class Progress {
    */
   constructor (type) {
     // Get rate-function according to type ,or user can set their own rate-function which will not cache
-    this.curve = isFunction(type) ? Progress.get(type || presetWay[0]) : type
+    this.curve = !isFunction(type) ? Progress.get(type || presetWay[0]) : type
   }
 
   /**
@@ -74,30 +74,45 @@ function trapezoid (top, bottom, high) {
 
 // Preset SpeedRate operation
 Progress.set(presetWay[0], (_current, _total) => {
+  if (_total === 0) {
+    return 1
+  }
   const basicSpeed = divide(1, _total)
-  return multiply(_current, basicSpeed)
+  const rate = multiply(_current, basicSpeed)
+  return rate >= 1 ? 1 : rate
 })
 Progress.set(presetWay[1], (_current, _total) => {
+  if (_total === 0) {
+    return 1
+  }
   const basicSpeed = divide(1, _total)
   const cur = divide(_current, _total) + 0.5
   const begin = 0.5
-  return trapezoid(
+  const rate = trapezoid(
     multiply(cur * basicSpeed),
     multiply(begin * basicSpeed),
     _current
   )
+  return rate >= 1 ? 1 : rate
 })
 Progress.set(presetWay[2], (_current, _total) => {
+  if (_total === 0) {
+    return 1
+  }
   const basicSpeed = divide(1, _total)
   const cur = divide(_current, _total) + 0.5
   const begin = 0.5
-  return trapezoid(
+  const rate = trapezoid(
     multiply(cur * basicSpeed),
     multiply(begin * basicSpeed),
     _current
   )
+  return rate >= 1 ? 1 : rate
 })
 Progress.set(presetWay[3], (_current, _total) => {
+  if (_total === 0) {
+    return 1
+  }
   const basicSpeed = divide(1, _total)
   const begin = 0.5
   const midBegin = 1.5
@@ -115,17 +130,21 @@ Progress.set(presetWay[3], (_current, _total) => {
         _current
       )
       : 0
-  return progress
+  return progress >= 1 ? 1 : progress
 })
 Progress.set(presetWay[4], (_current, _total) => {
+  if (_total === 0) {
+    return 1
+  }
   const basicSpeed = divide(1, _total)
   const cur = 1.5 - divide(_current, _total)
   const begin = 1.5
-  return trapezoid(
+  const rate = trapezoid(
     multiply(cur * basicSpeed),
     multiply(begin * basicSpeed),
     _current
   )
+  return rate >= 1 ? 1 : rate
 })
 
 export default Progress

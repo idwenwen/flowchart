@@ -1,4 +1,4 @@
-import { each } from '@cc/tools'
+import { each } from '@/tools/extension/iteration'
 import { calculateCanvas } from '../panel/index'
 import { flatten } from 'lodash'
 
@@ -16,7 +16,7 @@ export default {
   name: 'text',
   draw: {
     path: function text (ctx, par) {
-      const texts = par.text.splice('\n')
+      const texts = par.text.split('\n')
       const defStyle = {
         font: par.font || '18px bold 微软雅黑',
         textAlign: par.textAlign || 'center',
@@ -27,7 +27,7 @@ export default {
         let real = [content]
         if (par.maxWidth) {
           const style = calculateCanvas.measureText(content, defStyle)
-          if (style.width > par.maxWidth) {
+          if (style && par.maxWidth && style.width > par.maxWidth) {
             const rate = Math.floor((par.maxWidth / style.width) * 100) / 100
             const len = Math.floor(content.length * rate) // 计算最大可能可以获取几个字
             real = toSameLen(content, len)
@@ -37,8 +37,8 @@ export default {
       })
 
       const lineheight =
-        parseInt(par.font) + 4 > par.lineHeight
-          ? parseInt(par.font) + 4
+        (!par.lineHeight || (parseInt(par.font) + 4) > par.lineHeight)
+          ? (parseInt(par.font) + 4)
           : par.lineHeight
       // 计算必要的行高。
       res = flatten(res) // 减少数组层级

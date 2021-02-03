@@ -55,7 +55,7 @@ class TextMeasure {
 
   toSetting () {
     return {
-      parameter: this.getParameter(),
+      data: this.getParameter(),
       path: 'text'
     }
   }

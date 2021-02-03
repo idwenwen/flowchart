@@ -1,17 +1,18 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <HelloWorld/>
+    <FlowChart/>
   </div>
 </template>
 
 <script>
 import HelloWorld from './components/HelloWorld'
+import FlowChart from './components/diagram'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    HelloWorld,
+    FlowChart
   }
 }
 </script>

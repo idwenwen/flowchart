@@ -1,5 +1,7 @@
-import { toRGBA } from '@cc/tools'
-import { getCurrentLink, LinkingSuccess } from '../../canvas'
+import { toRGBA } from '@/tools/extension/color'
+import { portType } from '.'
+import { setSuccess } from '../../canvas'
+// import { getCurrentLink, LinkingSuccess } from '../../canvas'
 
 class PortHint {
   // port: Port; // 归属于哪一个端口。
@@ -13,9 +15,9 @@ class PortHint {
         return this.center
       },
       radius: function () {
-        return this.width * 0.525 // 当前圆半径
+        return this.width * 0.7 // 当前圆半径
       },
-      borderWidth: function () {
+      lineWidth: function () {
         return this.radius
       },
       color: function () {
@@ -30,23 +32,36 @@ class PortHint {
       linkHint (eve, type) {
         // 优先判定当前端口是否为入端口
         // 通过传递过来的组件类型判当前端口是否可以连接。如果过可以则展示当前的linkhint调用当前对象的exhibition事件
-        if (type === _t.port.type) {
-          this.origin.animateDispatch('exhibition')
+        const otype = _t.port.type
+        if (!(_t.port.hasConnect && !_t.port.multiple)) {
+          let dispatch = false
+          if (type === portType.DataInput && otype === portType.DataOutput) {
+            dispatch = true
+          } else if (type === portType.DataOutput && otype === portType.DataInput) {
+            dispatch = true
+          } else if (type === portType.ModelInput && otype === portType.ModelOutput) {
+            dispatch = true
+          } else if (type === portType.ModelOutput && otype === portType.ModelInput) {
+            dispatch = true
+          }
+          if (dispatch) {
+          // if (process.env.NODE_ENV === 'development') {
+            console.log(_t.port.container.name + ' ' + otype + ' port showing')
+            // }
+            this.origin.animateDispatch('exhibition')
+          }
         }
       },
       linkInto (eve, pos) {
         // 触发port内容的连接事件
-        if (this.isPointInFigure(pos) && this.origin.display) {
-          _t.port.container.diagram.animateDispatch('linkIntoPort', _t.port.name)
+        if (this.isPointInFigure(pos) && this.origin.getDisplay()) {
+          _t.port.container.diagram.dispatchEvents('linkIntoPort', eve, _t.port.name)
           // port 记录当前的连接情况
-          const link = getCurrentLink()
-          link.changeEnd(this.center)
-          LinkingSuccess() // 连接成功。
+          setSuccess()
         }
-        this.port.container.hintFinish()
       },
-      linkHide (eve) {
-        if (this.origin.display) {
+      linkHide () {
+        if (this.origin.getDisplay()) {
           this.origin.animateDispatch('hidden')
         }
       }
@@ -54,23 +69,26 @@ class PortHint {
   }
 
   getAnimation () {
+    const _t = this
     let originWidth
     return {
       // 展示当前的hint内容的动画
       exhibition: {
         variation: function (progress) {
-          if (!this.origin.display) this.origin.display = true
+          // if (process.env.NODE_ENV === 'development') {
+          console.log(_t.port.container.name + ' port exhibition, process:' + progress)
+          // }
+          if (!this.origin.getDisplay()) this.origin.setDisplay(true)
           if (!originWidth) originWidth = this.radius
           this.radius = originWidth * progress
         },
-        time: 200,
-        progress: 'EaseIn'
+        time: 200
       },
       hidden: {
         variation: function (progress) {
           this.radius = originWidth * (1 - progress)
           if (progress >= 1) {
-            this.origin.display = false
+            this.origin.setDisplay(false)
             this.radius = originWidth
             originWidth = null
           }
@@ -92,20 +110,22 @@ class PortHint {
       center () {
         return this.center
       },
-      strokeWidth () {
-        return this.borderWidth
+      lineWidth () {
+        return this.lineWidth
       }
     }
     return [
       {
-        data: Object.assign(defP, {
-          stroke: true
+        data: Object.assign({}, defP, {
+          fill () { return false },
+          stroke () { return true }
         }),
         path: 'circle'
       },
       {
-        data: Object.assign(defP, {
-          fill: true,
+        data: Object.assign({}, defP, {
+          fill () { return true },
+          stroke () { return false },
           color () {
             const origin = toRGBA(this.color).split(',')
             origin[3] = origin[3].replace(/[0-9|\\.]+/, '0.2')

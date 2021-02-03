@@ -1,5 +1,5 @@
 import { isFunction } from 'lodash'
-import { throwing, Exception } from '../exception/index'
+import record, { Exception } from '../exception'
 
 class Console {
   // _exhibition; 打印对象
@@ -23,11 +23,11 @@ function exhibiteProxy () {
     set (target, key, func) {
       // 当且只当给定的内容是一个函数的时候才会进行添加。
       if (!isFunction(func)) {
-        throwing(
-          'IsNotFunction',
-          'This instance only can add new function',
-          Exception.level.Warn,
-          false
+        record(
+          new Exception('IsNotFunction',
+            'This instance only can add new function',
+            Exception.level.Warn,
+            false)
         )
       }
       // 如果当前key值不在target之中，表明没有这种方法
@@ -36,22 +36,23 @@ function exhibiteProxy () {
         target._presetOutput(key, func)
       } else {
         // 当前名称的方法已经存在，将会有提示，并且替换当前已经存在的方法。
-        throwing(
-          'AlreadyHad',
-          `There has exhibition operation called ${key}`,
-          Exception.level.Warn,
-          false
+        record(
+          new Exception('AlreadyHad',
+            `There has exhibition operation called ${key}`,
+            Exception.level.Warn,
+            false)
         )
       }
+      return true
     },
 
     get (target, key) {
       if (!target[key]) {
-        throwing(
-          'DoNotExist',
-          `There has no such function called ${key}`,
-          Exception.level.Warn,
-          false
+        record(
+          new Exception('DoNotExist',
+            `There has no such function called ${key}`,
+            Exception.level.Warn,
+            false)
         )
       } else {
         return target[key]

@@ -33,7 +33,7 @@ function getDataInput (type, allSignlePort = false) {
   const multiple = match(hasMultipleDataInput, type)
   if (allSignlePort || !match(hasMoreDataInput, type)) {
     res.push({
-      name: 'data0input',
+      name: 'data|0_Input',
       tip: 'Data Input',
       type: portType.DataInput,
       multiple
@@ -42,13 +42,13 @@ function getDataInput (type, allSignlePort = false) {
     res.push(
       ...[
         {
-          name: 'train_datainput',
+          name: 'data|0_Input',
           tooltip: 'Train Data Input',
           type: portType.DataInput,
           multiple
         },
         {
-          name: 'validate_datainput',
+          name: 'data|1_Input',
           tooltip: 'Validation Data Input',
           type: portType.DataInput,
           multiple: false
@@ -56,6 +56,7 @@ function getDataInput (type, allSignlePort = false) {
       ]
     )
   }
+  return res
 }
 
 /** *********************dataoutput *************************/
@@ -78,40 +79,40 @@ function getDataOutput (type, _allSignlePort = false) {
   let res = []
   if (match(hasNoData, type)) return res
   if (match(hasNoDataOutput, type)) return res
-  if (!match(hasThreeOutputPort, type)) {
+  if (match(hasThreeOutputPort, type)) {
     res.push(
       ...[
         {
-          name: 'data0output',
+          name: 'data|0_Output',
           tip: 'Train Data Output',
           type: portType.DataOutput,
           multiple: false
         },
         {
-          name: 'data1output',
+          name: 'data|1_Output',
           tip: 'Validation Data Output',
           type: portType.DataOutput,
           multiple: false
         },
         {
-          name: 'data2output',
+          name: 'data|2_output',
           tip: 'Test Data Output',
           type: portType.DataOutput,
           multiple: false
         }
       ]
     )
-  } else if (!match(hasTwoOutputPort, type)) {
+  } else if (match(hasTwoOutputPort, type)) {
     res.push(
       ...[
         {
-          name: 'data0output',
+          name: 'data|0_Output',
           tip: 'Data Output_0',
           type: portType.DataOutput,
           multiple: false
         },
         {
-          name: 'data1output',
+          name: 'data|1_Output',
           tip: 'Data Output_1',
           type: portType.DataOutput,
           multiple: false
@@ -120,7 +121,7 @@ function getDataOutput (type, _allSignlePort = false) {
     )
   } else {
     res.push({
-      name: 'data0output',
+      name: 'data|0_Output',
       tip: 'Data Output',
       type: portType.DataOutput,
       multiple: false
@@ -152,7 +153,7 @@ function getModelInput (type, _allSignlePort = false) {
   else if (match(hasNoModelInput, type)) return res
   else {
     res.push({
-      name: 'modelinput',
+      name: 'model|0_Input',
       tip: 'Model Input',
       type: portType.ModelInput
     })
@@ -172,7 +173,7 @@ function getModelOutput (type, _allSignlePort = false) {
   else if (match(hasNoModelOutput, type)) return res
   else {
     res.push({
-      name: 'modeloutput',
+      name: 'model|0_Output',
       tip: 'Model Output',
       type: portType.modelOut,
       multiple

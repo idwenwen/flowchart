@@ -1,5 +1,5 @@
-import { UUID } from '../../../../tools/uuid'
-import { defNoEnum } from '../../../../tools/extension/define'
+import UUID from '@/tools/uuid'
+import { defNoEnum } from '@/tools/extension/define'
 import beat from '../heartbeat'
 
 // 播放对象唯一ID
@@ -41,10 +41,10 @@ class Player {
   }
 
   // 上下文设置方法
-  set context (newContext) {
+  setContext (newContext) {
     this._context = newContext
   }
-  get context () {
+  getContext () {
     return this._context
   }
 
@@ -99,32 +99,34 @@ class Player {
   // 帧动画播放器加载
   loading (operation, restart) {
     // 播放初始化
+    const _t = this
     this.ready()
 
     // 帧动画播放方法
     return timeStep => {
       // 记录开始时间，是否已经开始运行以及，当前运行状态
-      if (!this.started) this.started = true
-      if (!this.isPlaying) this.isPlaying = true
-      if (!this.startTime) this.startTime = timeStep
+      if (!_t.started) _t.started = true
+      if (!_t.isPlaying) _t.isPlaying = true
+      if (!_t.startTime) _t.startTime = timeStep
 
       // 上一帧的计算时间
-      if (!this.lastStep) this.lastStep = timeStep
+      if (!_t.lastStep) _t.lastStep = timeStep
 
       // 计算运行间隔时间
-      this.runTime += timeStep - this.lastStep
+      _t.runTime += (timeStep - _t.lastStep)
+      _t.lastStep = timeStep
 
       // 计算下一帧内容，以倍数化当前运行时间来达到提速运行的目的
-      let next = operation(this.runTime * this.times)
+      let next = operation(_t.runTime * _t.times)
 
       // 判定是否有下一帧，或者当前帧集合是否重复播放
-      if (!next && this.repeat) {
-        this.ready()
+      if (!next && _t.repeat) {
+        _t.ready()
         restart && restart()
         next = true
-      } else {
-        this.isPlaying = false
-        this.finished = true
+      } else if (!next) {
+        _t.isPlaying = false
+        _t.finished = true
       }
       return next
     }

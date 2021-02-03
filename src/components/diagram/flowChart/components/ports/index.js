@@ -1,5 +1,5 @@
 import { each } from '@/tools/extension/iteration'
-import { config } from '../config'
+// import { config } from '../config'
 import Port from './port'
 import { portConfig } from './portConfig'
 
@@ -17,12 +17,13 @@ class Ports {
   // modelOutput
   constructor (type, allSingleMode = false, role, container) {
     const ports = portConfig(type, allSingleMode)
+    this.container = container
+    const _t = this
     each(ports)((ports, key) => {
-      this[key] = each(ports)((port) => {
-        return new Port(port.name, port.type, port.tip, port.multiple, role, this.container)
+      _t[key] = each(ports)((port) => {
+        return new Port(port.name, port.type, port.tip, port.multiple, role, _t.container)
       })
     })
-    this.container = container
   }
 
   getParameter () {
@@ -37,12 +38,18 @@ class Ports {
         width = width < min ? min : width
         return width
       },
+      compWidth: function () {
+        return this.width
+      },
       height: function () {
         const times = 0.01
         const min = 4
         let width = this.width * times
         width = width < min ? min : width
         return width
+      },
+      compHeight: function () {
+        return this.height
       },
       center: function () {
         return this.center
@@ -63,11 +70,12 @@ class Ports {
   getPortPositon (portList, top = true) {
     const setting = each(portList)((port, index) => {
       const origin = port.toSetting()
-      origin.center = function () {
+      const data = origin.data
+      data.center = function () {
         const vertical =
-          ((this.height * (1 - config.panelBorder)) / 2) * (top ? -1 : 1)
+          (this.compHeight / 2) * (top ? -1 : 1)
         const len = portList.length + 1
-        const piece = (this.width * (1 - config.panelBorder)) / len
+        const piece = (this.compWidth) / len
         const horizen = -(len / 2 - index - 1) * piece
         return [this.center[0] + horizen, this.center[1] + vertical]
       }

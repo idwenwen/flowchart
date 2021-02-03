@@ -1,5 +1,4 @@
-import { each } from '../../../tools/extension/iteration'
-import { toArray } from 'lodash'
+import { each, toArray } from '../../../tools/extension/iteration'
 
 /**
  * 绘制过程对象，提供绘制前后的准备，收尾工作与常用的绘制方式。
@@ -56,9 +55,10 @@ class Brushing {
   call (cb) {
     if (cb) {
       // 存在当前函数则调用。
+      const _t = this
       cb = toArray(cb)
       each(cb)(val => {
-        val(this.ctx)
+        val(_t.ctx)
       })
     }
   }
@@ -83,7 +83,7 @@ class Brushing {
       this.call(customProcess.afterDraw) // 绘制后回调函数
       this.restore()
       this.call(customProcess.afterRestore)
-    } finally {
+    } catch (err) {
       void 0
     }
   }

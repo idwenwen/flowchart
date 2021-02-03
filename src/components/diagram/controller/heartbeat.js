@@ -1,7 +1,8 @@
 import { each } from '../../../tools/extension/iteration'
 import { Exception } from '../../../tools/exception'
-import { Middleware } from '../../../tools/extension/onion'
+import Middleware from '../../../tools/extension/onion'
 import renderController from './drawing'
+import throttle from 'lodash/throttle'
 
 /**
  * 公共心跳关系，主要用于处理动作机制以及，相对固定间隔时间之内的时间
@@ -11,6 +12,7 @@ class HeartBeat {
   // pausingActions: Mapping<string, player>;  暂停运行Action
   // middleWare: Middleware; Onion 自定义回调包裹。
   // running: boolean; 当前心跳是否在运行，如果running之中没有了内容将会停止。
+  static timeBetween = 0
 
   constructor () {
     this.running = false
@@ -24,6 +26,7 @@ class HeartBeat {
     const player = action.act(...meta)
     let name = action.name // 获取当前动作名称，具体需要操作的动作需要给定明确的名称。
     this.runningActions.set(name, player)
+    this.trigger()
   }
 
   // 暂停帧动作
@@ -78,38 +81,44 @@ class HeartBeat {
 
   // 循环加载触发
   trigger () {
-    const _t = this
-
-    const step = timeStep => {
-      const ending = []
-      each(this.runningActions)((item, key) => {
-        if (item(timeStep)) ending.push(key) // 运行当前语句内容，并进行内容判定。
-      })
-      // 删除已经结束的动作
-      each(ending)(name => {
-        this.runningActions.delete(name)
-      })
-      // 通过当前running之中是否还有在播放的帧动作来判别是够需要继续
-      return this.runningActions.size > 0
-    }
-
     if (!this.running) { // 判定当前心跳是否在运行，如果没有则启动。
+      const _t = this
+
+      const step = timeStep => {
+        const ending = []
+        each(this.runningActions)((item, key) => {
+          if (!item(timeStep)) ending.push(key) // 运行当前语句内容，并进行内容判定。
+        })
+        // 删除已经结束的动作
+        each(ending)(name => {
+          _t.runningActions.delete(name)
+        })
+        // 通过当前running之中是否还有在播放的帧动作来判别是够需要继续
+        return this.runningActions.size > 0
+      }
+
       this.running = true
       const renders = renderController.render()
+      let timestepCheck = 0
+      const timestep = throttle(function () {
+        // 通过中间件的形式，为当前内容添加相关回调与过滤机制。
+        _t.middleWare.compose()(
+          {},
+          (context, next) => {
+            // debugger
+            const hasNext =
+            step.call(_t, timestepCheck) || renderController.isRendering()
+            if (hasNext) run()
+            else _t.running = false
+            renders() // 渲染当前的绘制。
+            context.hasNext = hasNext
+            next()
+          })
+      }, HeartBeat.timeBetween)
       const run = () => {
         requestAnimationFrame(timeStep => {
-          // 通过中间件的形式，为当前内容添加相关回调与过滤机制。
-          this.middleWare.compose()(
-            {},
-            (context, next) => {
-              const hasNext =
-              step.call(_t, timeStep) || renderController.isRendering()
-              if (hasNext) run()
-              else _t.running = false
-              renders() // 渲染当前的绘制。
-              context.hasNext = hasNext
-              next()
-            })
+          timestepCheck = timeStep
+          timestep()
         })
       }
       run()

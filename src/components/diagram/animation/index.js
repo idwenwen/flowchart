@@ -1,6 +1,6 @@
-import { each } from '../../../tools/extension/iteration'
+import { each, toArray } from '../../../tools/extension/iteration'
 import { Exception } from '../../../tools/exception'
-import { isObject, toArray, remove, throttle } from 'lodash'
+import { isObject, remove, throttle } from 'lodash'
 import Player from '../controller/action/player'
 import { toActable } from '../controller/action/index'
 
@@ -30,20 +30,26 @@ class Animate {
 
   add (name, func = false, once = false) {
     // 如果传递的是配置对象
+    const _t = this
     if (isObject(name)) {
       // 遍历添加配置对象内容。
-      each(name)((val, key) => {
-        this.add(key, val, func)
+      each(name)(function (val, key) {
+        _t.add(key, val, func)
       })
     } else {
       // 获取原有的动画列表
       const list = this.animations.get(name) || []
       func = toArray(func)
-      each(func)(op => {
-        op.context = this.context
+      each(func)(function (op) {
+        let act = op
+        if (op instanceof Player) {
+          act.setContext(_t.context)
+        } else {
+          act = toActable(Object.assign({}, { context: _t.context }, op))
+        }
         list.push({
           // 传递的内容为Player的实例，或者可以转变成实例的配置文件，具体配置见controller/action/index
-          action: op instanceof Player ? op : toActable(op),
+          action: act,
           once
         })
       })
@@ -53,16 +59,17 @@ class Animate {
 
   // 删除animate实例管理的动画。
   remove (name) {
+    const _t = this
     name = toArray(name)
-    each(name)(type => {
-      this.animations.delete(type)
+    each(name)(function (type) {
+      _t.animations.delete(type)
     })
   }
 
   _operation (name, opera, running) {
     try {
       // 获取相关的动画函数
-      const actions = running ? this.animations.get(name) : this.running.get(name)
+      const actions = !running ? this.animations.get(name) : this.running.get(name)
       if (!actions) {
         throw new Exception(
           'DonotExist',
@@ -79,12 +86,13 @@ class Animate {
   }
 
   _notifyManager (name, opera, addToRunning = false) {
-    this._operation(name, (actions) => {
+    const _t = this
+    this._operation(name, function (actions) {
       let willRemove = []
 
       // 将当前内容添加到运行列表
       if (addToRunning) {
-        this.running.set(name, actions)
+        _t.running.set(name, actions)
       }
       // 并进行遍历执行。
       each(actions)((player, index) => {
@@ -94,9 +102,9 @@ class Animate {
       if (willRemove.length > 0) {
         // 删除单次运行动画
         remove(actions, (_val, index) => willRemove.find(i => i === index))
-        this.animations.set(name, actions) // 更新当前的映射内容
+        _t.animations.set(name, actions) // 更新当前的映射内容
       }
-      this.finishObser() // 删除运行列表中已经运行完的动作。
+      _t.finishObser() // 删除运行列表中已经运行完的动作。
     }, false)
   }
 
@@ -112,10 +120,11 @@ class Animate {
 
   // 删除已经完成的动作。
   _deleteFinished () {
-    return throttle(() => {
-      each(this.running)((val, key) => {
+    const _t = this
+    return throttle(function () {
+      each(_t.running)(function (val, key) {
         const res = remove(toArray(val), item => item.action.finished)
-        this.running.set(key, res) // 更新删除完成内容之后的数据给running列表。
+        _t.running.set(key, res) // 更新删除完成内容之后的数据给running列表。
       })
     }, 1000)
   }

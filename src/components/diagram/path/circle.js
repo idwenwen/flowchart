@@ -6,12 +6,21 @@ export default {
     path: function circle (ctx, par) {
       ctx.arc(
         par.center[0],
-        par.center[0],
+        par.center[1],
         par.radius,
-        toRadian(par.startAngle),
-        toRadian(par.endAngle),
+        toRadian(par.startAngle || 0),
+        toRadian(par.endAngle || 360),
         par.anticlockwise || false
       )
+      ctx.lineWidth = par.lineWidth || 2
+      if (par.stroke) {
+        ctx.strokeStyle = par.color
+        ctx.stroke()
+      }
+      if (par.fill) {
+        ctx.fillStyle = par.color
+        ctx.fill()
+      }
     },
     paramFilter: {
       radius: `${'number'}`,

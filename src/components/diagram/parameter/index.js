@@ -1,7 +1,8 @@
-import { defNoEnum, each, remove } from '@cc/tools'
-import { isNil, isObject, isFunction, eq } from 'lodash'
-import Watcher from '../../../../../oct2/src/tools/observer/watcher'
-import Observer from '../../../../../oct2/src/tools/observer'
+import { defNoEnum } from '@/tools/extension/define'
+import { each } from '@/tools/extension/iteration'
+import { isNil, isObject, isFunction, eq, remove } from 'lodash'
+import Watcher from '@/tools/observer/watcher'
+import Observer from '@/tools/observer'
 
 /**
  * 参数对象, 不同的参数对象之间有相关性，通过发布订阅模式进行内容的关联。
@@ -14,10 +15,12 @@ class Parameter {
   // cache: object;  最终结果对象。
 
   constructor (origin, context) {
-    defNoEnum(this, {
-      _imply: this.initWatcher(origin, context)
-    })
+    const _t = this
     this.cache = null // 开始的时候还没有结果。
+    this._hasProxy = false
+    defNoEnum(this, {
+      _imply: _t.initWatcher(origin, context)
+    })
   }
 
   /**
@@ -26,12 +29,14 @@ class Parameter {
    * @param context 当前watcher的上下文内容。
    */
   initWatcher (implying, context) {
+    const _t = this
     return new Watcher(context || implying,
       // Getter方法，对象内容转换，并将context之中不同值赋予当前内容。
       function getCache (imm = implying) {
+        const __t = this
         const res = each(imm)((val) => {
           if (isFunction(val)) {
-            return val.call(this)
+            return val.call(__t)
           } else if (isObject(val)) {
             return getCache(val)
           } else {
@@ -42,24 +47,24 @@ class Parameter {
       },
 
       // 回调函数。watcher之中的cache汇总至此、
-      (result) => {
+      function (result) {
       // 初始化结果对象
-        if (isNil(this.cache)) this.cache = {}
+        if (isNil(_t.cache)) _t.cache = {}
 
-        if (this.cache instanceof Proxy) {
-          const keys = Object.keys(this.cache)
+        if (_t._hasProxy) {
+          const keys = Object.keys(_t.cache)
           each(result)((val, key) => {
-            if (!eq(this.cache[key], val)) this.cache[key] = val // 两值不相同的情况下
+            if (!eq(_t.cache[key], val)) _t.cache[key] = val // 两值不相同的情况下
             remove(keys, (k) => k === key)
           })
           if (keys.length > 0) {
           // 删除多余的展示内容。
             each(keys)((key) => {
-              delete this.cache[key]
+              delete _t.cache[key]
             })
           }
         } else {
-          this.cache = result
+          _t.cache = result
         }
       })
   }
@@ -73,9 +78,10 @@ class Parameter {
   }
 
   notifier () {
-    if (!(this.cache instanceof Proxy)) {
+    if (!this._hasProxy) {
       // 当前cache作为变动关联上游。
       this.cache = new Observer(this.cache).observer
+      this._hasProxy = true
     }
   }
 

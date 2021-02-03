@@ -8,7 +8,7 @@
  */
 
 import { capitalize, has } from 'lodash'
-import { logger } from '../logger'
+import Logger from '../logger'
 
 export const SeverityLevel = {
   Info: 'Info',
@@ -33,7 +33,7 @@ export class Exception extends Error {
     super(msg)
     this.alias = alias
     this.severity = severity
-    if (cacheIntoLog) logger.log(this, severity)
+    if (cacheIntoLog) Logger.log(this, severity)
   }
 
   msg () {

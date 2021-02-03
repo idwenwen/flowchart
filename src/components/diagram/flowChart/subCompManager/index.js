@@ -1,5 +1,5 @@
-import { each } from '../../../../tools/extension/iteration'
-import { toArray, isFunction } from 'lodash'
+import { each, toArray } from '../../../../tools/extension/iteration'
+import { isFunction } from 'lodash'
 import PanelOperation from '../panelManager/panelOperation'
 
 /**

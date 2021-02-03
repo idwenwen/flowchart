@@ -1,5 +1,5 @@
-import { Action } from '@/components/diagram/controller/action/action'
-import { toChain } from '@cc/diagram/controller/action'
+import Action from '@/components/diagram/controller/action/action'
+import { toChain } from '@/components/diagram/controller/action/chain'
 import { ComponentsStatus } from '..'
 
 const CHOOSE = '#4159D1'
@@ -51,7 +51,7 @@ class Border {
 
   toSetting () {
     return {
-      parameter: {
+      data: {
         width () {
           return this.width
         },
@@ -71,7 +71,7 @@ class Border {
       },
       path: 'rect',
       animate: {
-        toStatus: this.toStatus
+        toStatus: this.toStatus()
       }
     }
   }

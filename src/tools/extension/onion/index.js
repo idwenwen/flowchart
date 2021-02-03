@@ -1,7 +1,7 @@
 /**
  * 逻辑过滤器
  */
-import { UUID } from '../../uuid/index'
+import UUID from '../../uuid/index'
 import { Exception } from '../../exception'
 
 const MiddlewareId = new UUID()
@@ -22,6 +22,7 @@ export default class Middleware {
   // uuid: string;
   constructor () {
     this.uuid = MiddlewareId.get().toString()
+    this.middlewares = []
   }
 
   // 当前实例注册过滤器函数
@@ -53,7 +54,7 @@ export default class Middleware {
           index++
           let fn = wares[i]
           if (i === wares.length) fn = next
-          if (!fn) Promise.resolve()
+          if (!fn) return Promise.resolve()
           try {
             return Promise.resolve(fn(context, dispatch.bind(null, i + 1)))
           } catch (err) {

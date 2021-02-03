@@ -1,4 +1,4 @@
-import {divide, multiple} from 'lodash'
+import {divide, multiply} from 'lodash'
 
 function equallyAngle (angle) {
   const bet = 360
@@ -10,9 +10,9 @@ function equallyAngle (angle) {
 }
 
 export function toRadian (angle) {
-  return multiple(divide(equallyAngle(angle), 360), 2) * Math.PI
+  return multiply(divide(equallyAngle(angle), 360), 2) * Math.PI
 }
 
 export function toAngle (radian) {
-  return multiple(divide(radian, 2 * Math.PI), 360)
+  return multiply(divide(radian, 2 * Math.PI), 360)
 }

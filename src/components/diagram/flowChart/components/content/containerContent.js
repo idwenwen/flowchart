@@ -1,5 +1,5 @@
-import { Action } from '@cc/diagram'
-import { toChain } from '@cc/diagram/controller/action/chain'
+import Action from '@/components/diagram/controller/action/action'
+import { toChain } from '@/components/diagram/controller/action/chain'
 import { ComponentsStatus } from '..'
 
 const CHOOSE = '#4159D1'
@@ -36,7 +36,11 @@ function contentColor (choosed, status, disable) {
 }
 
 class ContainerContent {
+  constructor () {
+    this.progressing = 1
+  }
   toParameter () {
+    const _t = this
     return {
       width () {
         return this.width
@@ -54,11 +58,14 @@ class ContainerContent {
         return this.center
       },
       fill: true,
-      progress: 1
+      progress () {
+        return _t.progressing
+      }
     }
   }
 
   loading () {
+    const _t = this
     let originColor
     const getOpacity = () => {
       return parseFloat(originColor.split(',')[3])
@@ -67,26 +74,30 @@ class ContainerContent {
       list: [
         {
           variation (_progress) {
-            this.color = originColor
+            if (originColor) {
+              this.color = originColor
+            }
             this.progress = 0
+            _t.progressing = 0
           },
           time: 0
         },
         {
           variation (progress) {
             this.progress = progress
+            _t.progressing = progress
           },
-          time: 1000
+          time: 2000
         },
         {
           variation (progress) {
             if (!originColor) originColor = this.color
             const origin = this.color.split(',')
-            const bet = getOpacity() * (1 - progress)
+            const bet = (getOpacity() * (1 - progress)).toFixed(2)
             origin[3] = origin[3].replace(/[0-9|\\.]+/, bet)
-            return origin.join(',')
+            this.color = origin.join(',')
           },
-          time: 500
+          time: 1000
         }
       ],
       repeat: true
@@ -99,7 +110,7 @@ class ContainerContent {
       list: [
         {
           variation (progress, status) {
-            if (this.type === ComponentsStatus.running) {
+            if (this.status === ComponentsStatus.running) {
               (this['origin']).animationOperation('end')('loading')
             }
             if (!originProgress) originProgress = this.progress
@@ -111,9 +122,10 @@ class ContainerContent {
           time: 500
         },
         {
-          variation () {
+          variation (_progress, status) {
             originProgress = null
             originColor = null
+            this.origin.root().dispatchEvents('toStatus', status)
           },
           time: 0
         }
@@ -123,7 +135,7 @@ class ContainerContent {
 
   toSetting () {
     return {
-      parameter: this.toParameter(),
+      data: this.toParameter(),
       path: 'rect',
       animate: {
         loading: this.loading(),

@@ -1,16 +1,24 @@
 /**
  * 链接内容
  */
-import { UUID } from '@cc/tools'
+import UUID from '@/tools/uuid'
+import { each } from '../../../../tools/extension/iteration'
 import Diagram from '../../diagram'
+import { getCurrentLink, getMainCanvas, linkingFail, setChoosen } from '../canvas'
 import PanelManager from '../panelManager'
+import { compareToPos, getPos } from '../utils'
 import config from './config'
 import Curve from './curve'
+import { globalComponents } from '../components'
+import { Exception } from '../../../../tools/exception'
 
 // type Point = [number, number];
 
 class GlobalLinking {
   // comps: Mapping<string, Linking>;
+  constructor () {
+    this.comps = new Map()
+  }
 
   set (name, content) {
     this.comps.set(name, content)
@@ -21,7 +29,7 @@ class GlobalLinking {
   }
 }
 
-export const globalComponents = new GlobalLinking()
+export const globalLinking = new GlobalLinking()
 
 const linkingId = new UUID()
 
@@ -40,42 +48,59 @@ class Linking {
     this.toSetting()
     this.from = from
     this.end = end
-    globalComponents.set(this.uuid, this)
+    this.fromPort = null
+    this.endPort = null
+    this.isChoose = false
+    this.saved = true
+    globalLinking.set(this.uuid, this)
   }
 
   toParameter () {
+    const _t = this
     return {
       startPoint () {
-        const point = [parseFloat(this.style.top), parseFloat(this.style.left)]
-        const width = this.attrs.width
-        const height = this.attrs.height
-        return [
-          point[0] + (height * config.panelBorder) / 2,
-          point[1] + (width * config.panelBorder) / 2
-        ]
+        return this.attrs.startPoint
       },
       endPoint () {
-        const point = [parseFloat(this.style.top), parseFloat(this.style.left)]
-        const width = this.attrs.width
-        const height = this.attrs.height
-        return [
-          point[0] + height - (height * config.panelBorder) / 2,
-          point[1] + width - (width * config.panelBorder) / 2
-        ]
+        return this.attrs.endPoint
       },
-      choosed: false
+      leftTop () {
+        return this.attrs.point
+      },
+      choosed () {
+        return _t.isChoose
+      },
+      save () {
+        return _t.saved
+      }
     }
   }
 
   toEvents () {
+    const _t = this
     return {
-      choose: {
-        variation: () => { this.choosed = true },
-        time: 0
+      isSaving () {
+        _t.saved = false
+        this.saved = false
       },
-      unchoose: {
-        variation: () => { this.choosed = false },
-        time: 0
+      hasSave () {
+        _t.saved = true
+        this.saved = true
+      },
+      choose () {
+        _t.isChoose = true
+        this.choosed = true
+      },
+      unchoose () {
+        _t.isChoose = false
+        this.choosed = false
+      },
+      linkSuccessed () {
+        _t.diagram.dispatchEvents('toSolid')
+        _t.diagram.panel.styles['z-index'] = 1
+      },
+      linkFailedCheck () {
+        linkingFail()
       }
     }
   }
@@ -88,34 +113,63 @@ class Linking {
     }
   }
 
+  toPanelEvents () {
+    const _t = this
+    return {
+      'mouseup': function originMouseup (eve) {
+        // 删除当前的currentlink都要验证
+        const curret = getCurrentLink()
+        if (eve.target === curret.panelManager.dom) {
+          each(globalComponents.comps)(function (val, key) {
+            val.diagram.dispatchEvents('linkInto', eve, getPos(eve, val.panelManager.dom))
+            val.diagram.dispatchEvents('linkHide')
+          })
+          _t.diagram.dispatchEvents('linkFailedCheck')
+        }
+      },
+      'click': function originClick (eve) {
+        if (this.diagram.isPointInFigure(getPos(eve))) {
+          setChoosen(_t)
+        }
+      }
+    }
+  }
+
   toSetting () {
     const { pos, width, height } = this.getOrigin(
       this.startPoint,
       this.endPoint
     )
+    pos[0] = pos[0] + width / 2
+    pos[1] = pos[1] + height / 2
     const panel = new PanelManager().toSetting(
       width,
       height,
-      pos
+      pos,
+      {
+        startPoint: this.startPoint,
+        endPoint: this.endPoint
+      }
     )
+    panel.events = this.toPanelEvents()
     const diagram = this.combine()
     this.diagram = new Diagram(panel, diagram)
-    this.PanelManager = this.diagram.panel
+    this.panelManager = this.diagram.panel
   }
 
   getOrigin (start, end) {
     const pos = [Math.min(start[0], end[0]), Math.min(start[1], end[1])]
     const bot = [Math.max(start[0], end[0]), Math.max(start[1], end[1])]
-    const width = bot[1] - pos[1]
-    const height = bot[0] - pos[0]
-    const widthBorder = (width / (1 - config.panelBorder) - width) / 2
-    const heightBorder = (height / (1 - config.panelBorder) - height) / 2
+    const width = bot[0] - pos[0]
+    const height = bot[1] - pos[1]
+    const widthBorder = config.panelBorder
+    const heightBorder = config.panelBorder
     pos[0] = pos[0] - heightBorder
     pos[1] = pos[1] - widthBorder
     return {
       pos,
-      width: width / (1 - config.panelBorder),
-      height: height / (1 - config.panelBorder)
+      width: width + widthBorder * 2,
+      height: height + widthBorder * 2
     }
   }
 
@@ -124,18 +178,29 @@ class Linking {
       this.startPoint,
       this.endPoint
     )
-    this.panel.attrs.set({
+    this.panelManager.attrs.origin.set({
       width,
-      height
-    })
-    this.panel.style.set({
-      top: pos[1] + 'px',
-      left: pos[0] + 'px'
+      height,
+      point: pos,
+      startPoint: this.startPoint,
+      endPoint: this.endPoint
     })
   }
 
   changeStart (point) {
     this.startPoint = point
+    this.updatePanelAndDiagram()
+  }
+
+  translateStart (x, y) {
+    const origin = this.startPoint
+    this.startPoint = [origin[0] + x, origin[1] + y]
+    this.updatePanelAndDiagram()
+  }
+
+  translateEnd (x, y) {
+    const origin = this.endPoint
+    this.endPoint = [origin[0] + x, origin[1] + y]
     this.updatePanelAndDiagram()
   }
 
@@ -153,6 +218,57 @@ class Linking {
   setEndComp (end) {
     this.end = end
   }
+
+  choose () {
+    this.diagram.dispatchEvents('choose')
+  }
+
+  unchoose () {
+    this.diagram.dispatchEvents('unchoose')
+  }
 }
 
 export default Linking
+
+function findInTree (comp, name) {
+  let point = [0, 0]
+  comp.diagram.notify(function () {
+    if (this.data.cache.name && this.data.cache.name === name) {
+      point = this.data.cache.center
+      point = compareToPos(point, this.root().panel.dom, getMainCanvas().canvas)
+      throw new Exception('BreakingException', 'Ending iteration', Exception.level.Warn)
+    }
+  })
+  return point
+}
+
+export function linkComps (fromComp, toComp, fromPort, toPort) {
+  const fromPortName = fromPort.join('|') + '_Output'
+  const toPortName = toPort.join('|') + '_Input'
+  const from = findInTree(fromComp, fromPortName)
+  const end = findInTree(toComp, toPortName)
+  const linking = new Linking(from, end, null, fromComp, toComp)
+  linking.fromPort = (() => {
+    let res = null
+    each(fromComp.borderPorts[fromPort[0] + 'Output'])(function (port) {
+      if (port.name === fromPortName) {
+        res = port
+        throw new Exception('BreakingException', 'Ending iteration', Exception.level.Warn)
+      }
+    })
+    return res
+  })()
+  linking.endPort = (() => {
+    let res = null
+    each(toComp.borderPorts[toPort[0] + 'Input'])(function (port) {
+      if (port.name === toPortName) {
+        res = port
+        throw new Exception('BreakingException', 'Ending iteration', Exception.level.Warn)
+      }
+    })
+    return res
+  })()
+  getMainCanvas().container.append(linking.panelManager.dom)
+  linking.diagram.dispatchEvents('linkSuccessed')
+  return linking
+}

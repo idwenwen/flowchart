@@ -1,15 +1,32 @@
 import config from '../config'
 
+function toCurvesPoints (point1, point2) {
+  if (point1[0] === point2[0] || point1[1] === point2[1]) {
+    return [point1, point2]
+  } else {
+    const distanceY = point2[1] - point1[1]
+    const mid1 = [point1[0], point1[1] + distanceY * 0.2]
+    const mid2 = [point2[0], point2[1] - distanceY * 0.2]
+    return [point1, mid1, mid2, point2]
+  }
+}
+
 class Curve {
+  constructor () {
+    this.isDash = true
+  }
   toParameter () {
+    const _t = this
     return {
       // 开始点
-      startPoint () {
-        return this.startPoint
-      },
-      // 结束点
-      endPoint () {
-        return this.endPoint
+      points () {
+        return toCurvesPoints([
+          this.startPoint[0] - this.leftTop[0],
+          this.startPoint[1] - this.leftTop[1]
+        ], [
+          this.endPoint[0] - this.leftTop[0],
+          this.endPoint[1] - this.leftTop[1]
+        ])
       },
       color () {
         if (this.choosed) {
@@ -19,7 +36,7 @@ class Curve {
         }
       },
       lineWidth () {
-        let origin = config.maxLineWidth
+        let origin = config.minLineWidth
         if (this.choosed) {
           return origin * config.lineBright
         } else {
@@ -27,35 +44,28 @@ class Curve {
         }
       },
       arrow: config.withArrow,
-      dash: true // 当前线为虚线
+      dash () {
+        return _t.isDash
+      } // 当前线为虚线
     }
   }
 
   toEvents () {
+    const _t = this
     return {
-      toSolid: {
-        // 修改当前特性为实线
-        variation: () => { this.dash = false },
-        time: 0
+      toSolid () {
+        _t.isDash = false
+        this.dash = false
       },
-      toDash: {
-        variation: () => { this.dash = true },
-        time: 0
-      },
-      showArrow: {
-        variation: () => { this.arrow = true },
-        time: 0
-      },
-      hideArrow: {
-        variation: () => { this.arrow = false },
-        time: 0
-      }
+      toDash () { this.dash = true },
+      showArrow () { this.arrow = true },
+      hideArrow () { this.arrow = false }
     }
   }
 
   toSetting () {
     return {
-      data: this.toParameter,
+      data: this.toParameter(),
       path: 'curve',
       events: this.toEvents()
     }

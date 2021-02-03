@@ -1,9 +1,9 @@
 import { defNoEnum } from '../extension/define'
 import { each } from '../extension/iteration'
 import { Exception } from '../exception'
-import { UUID } from '../uuid'
+import UUID from '../uuid'
 import { popTarget, pushTarget } from './dep'
-import { eq, toArray, isObject, isFunction } from 'lodash'
+import { eq, isObject, isFunction, isArray } from 'lodash'
 
 // 唯一ID
 const WatcherId = new UUID()
@@ -25,13 +25,13 @@ class Watcher {
     // 当前对象之中的变量，除cache之外不对外，不可遍历
     defNoEnum(this, {
       uuid: WatcherId.get(),
-      active: false,
+      active: true,
 
       deps: [], // 订阅的观察者
 
       _context: context,
       _getter: getter,
-      _callback: cb ? toArray(cb) : [],
+      _callback: cb ? (!isArray(cb) ? [cb] : cb) : [],
 
       lazy: lazy,
       dirty: true
@@ -91,7 +91,9 @@ class Watcher {
 
     let result
     // 如果是对象的情况，对象之中的所有数据定义的如果是数值，则
-    if (isObject(getter)) {
+    if (isFunction(getter)) {
+      result = getter.call(this._context)
+    } else if (isObject(getter)) {
       result = {}
       each(getter)((get, key) => {
         try {
@@ -105,9 +107,6 @@ class Watcher {
           result[key] = get
         }
       })
-      return result
-    } else if (isFunction(getter)) {
-      result = getter.call(this._context)
     } else {
       result = getter
     }
@@ -131,6 +130,8 @@ class Watcher {
             each(this._callback)((cb) => {
               cb.call(this._context, this.cache)
             })
+          } else if (isFunction(this._callback)) {
+            this._callback.call(this._context, this.cache)
           }
         }
       } else {

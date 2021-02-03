@@ -50,7 +50,7 @@ class Dep {
    * 确定订阅者与发布者之间的依赖关系
    */
   depend () {
-    if (!Dep.target) {
+    if (Dep.target) {
       Dep.target.addDep(this)
     }
   }

@@ -25,9 +25,8 @@ const DefaultOperation = (observer) => {
 
         // 数据修改之后如果不是无效内容进行订阅通知。
         !doIgnore && observer.notify()
-        return !!value
       }
-      return false
+      return true
     },
 
     // 数据删除代理
@@ -124,7 +123,7 @@ class Observer {
     each(observed)((val, key) => {
       if (
         (isObject(val) || isArray(val)) && // 当前参数是兑现或者数组
-        ignore.find((val) => key === val) // 当前变量不在val之中。
+        (isArray(ignore) && ignore.find((val) => key === val)) // 当前变量不在val之中。
       ) {
         observed[key] = this.obser(val) // 深层遍历当前的对象确定其子内容有需要代理的内容。
       }
@@ -150,7 +149,7 @@ class Observer {
 
   doIgnore (key) {
     // 测试当前关键子是否在ignore列表之中
-    return this._ignore.find((val) => val === key)
+    return !this._ignore ? false : this._ignore.find((val) => val === key)
   }
 
   notify () {

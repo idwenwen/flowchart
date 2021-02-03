@@ -1,8 +1,8 @@
 import Player from './player'
 import Progress from '../progress'
-import { each } from '../../../../tools/extension/iteration'
-import { toRGBA } from '../../../../tools/extension/color'
-import { UUID } from '../../../../tools/uuid'
+import { each } from '@/tools/extension/iteration'
+import { toRGBA } from '@/tools/extension/color'
+import UUID from '@/tools/uuid'
 
 /**
  * 当前内容表示的是单个的动作变化内容。
@@ -45,12 +45,15 @@ class Action extends Player {
   }
 
   act (...meta) {
+    const _t = this
     return this.loading((current) => {
-      return !!this.variation.call(
-        this.context, // 当前上下文内容
-        this.progressing.progress(current, this.time),
+      const rate = _t.progressing.progress(current, _t.time)
+      const result = _t.variation.call(
+        _t.getContext(), // 当前上下文内容
+        rate,
         ...meta
       )
+      return result !== false && rate < 1
     })
   }
 }

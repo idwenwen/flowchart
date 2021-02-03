@@ -43,7 +43,7 @@ class Content {
 
   toSetting () {
     return {
-      parameter: this.toParameter(),
+      data: this.toParameter(),
       events: this.toEvent(),
       children: [new Container().toSetting(), new TextMeasure().toSetting()]
     }

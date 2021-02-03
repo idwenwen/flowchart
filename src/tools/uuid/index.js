@@ -12,13 +12,13 @@ export default class UUID {
     this.next = isFunction(next)
       ? next
       : (index) => {
-        return index++
+        return index + 1
       }
   }
 
   // 获取新的UUID内容
   get () {
-    const result = this.format(this.index)
+    const result = this.format ? this.format(this.index) : this.index.toString()
     this.index = this.next(this.index)
     return result
   }

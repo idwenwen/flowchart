@@ -16,7 +16,6 @@ class Container {
       radius () {
         return this.radius
       },
-      progress: 1,
       linking: false,
       status () {
         return this.status
@@ -37,7 +36,7 @@ class Container {
 
   toSetting () {
     return {
-      parameter: this.toParameter(),
+      data: this.toParameter(),
       events: this.toEvents(),
       children: [new ContainerContent().toSetting(), new Border().toSetting()]
     }

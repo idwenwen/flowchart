@@ -1,6 +1,6 @@
-import { each } from '../../../tools/extension/iteration'
+import { each, toArray } from '../../../tools/extension/iteration'
 import { Exception } from '../../../tools/exception'
-import { isObject, toArray, remove } from 'lodash'
+import { isObject, remove } from 'lodash'
 import { once } from '../controller/action/action'
 
 class Events {
@@ -48,22 +48,23 @@ class Events {
           false
         )
       }
+      const _t = this
       // 将当前时间逻辑设置称为一次action的内容统一添加到当前的公共心跳之中。
       once(this.context, () => {
         const willRemove = []
         // 设置当前转变到心跳函数之中，进行同步操作。
         eve = toArray(eve)
         each(eve)((func, index) => {
-          func.event.call(this.context, ...meta)
+          func.event.call(_t.context, ...meta)
           // 删除单次事件
           if (func.once) willRemove.push(index)
         })
         remove(eve, (_item, index) => {
           willRemove.find((val) => val === index)
         })
-        this.eventsList.set(name, eve)
+        _t.eventsList.set(name, eve)
       })
-    } finally {
+    } catch (err) {
       void 0
     }
   }

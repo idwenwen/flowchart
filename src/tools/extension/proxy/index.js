@@ -4,7 +4,8 @@ export function acquistion (context, CustomHandler) {
     set (target, key, value) {
       // 表示当前对象Key值之中有origin内容，则直接操作原对象上的内容。
       if (key.toString().search(ORIGIN + '.') >= 0) {
-        return (target[key.toString().replace(ORIGIN + '.', '')] = value)
+        target[key.toString().replace(ORIGIN + '.', '')] = value
+        return true
       } else {
         return CustomHandler.set && CustomHandler.set(target, key, value)
       }

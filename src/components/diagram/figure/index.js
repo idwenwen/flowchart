@@ -1,15 +1,16 @@
 import { defNoEnum } from '../../../tools/extension/define'
 import { each } from '../../../tools/extension/iteration'
-import { Tree } from '../../../tools/extension/tree'
+import Tree from '@/tools/extension/tree'
 import DrawPath from '../drawPath/index'
-import { isObject, isFunction, capacity } from 'lodash'
+import { isObject, isFunction, isNil } from 'lodash'
 import Events from '../events/index'
 import Animate, { AnimationOperation } from '../animation/index'
-import { acquistion } from '../config/common'
+import { acquistion } from '@/tools/extension/proxy'
 import Progress from '../controller/progress'
-import { calculateCanvas } from '../panel/index'
+import { calculateCanvas } from '../panel'
 import Watcher from '../../../tools/observer/watcher'
 import Parameter from '../parameter'
+import { Exception } from '../../../tools/exception'
 
 class Figure extends Tree {
   static Progress = Progress; // 提供设置接口
@@ -61,7 +62,7 @@ class Figure extends Tree {
     let node = opera(this._proxy) ? this : null
     if (node) return node
     else {
-      for (const val of this.children) {
+      for (const val of this.getChildren()) {
         node = val.findChild(opera)
         if (node) return node
       }
@@ -72,7 +73,7 @@ class Figure extends Tree {
   /** **************data 相关操作与关联关系 ********************/
   // 更新或者创建data内容。
   dataSupport (data, context) {
-    context = context || this.parent.data // 自动与上层的data相关联
+    context = context || (this.getParent() && this.getParent().data.cache) // 自动与上层的data相关联
     if (this.data) {
       this.data.context(context) // 更新当前的上下文环境 如果有改变的话。
     } else {
@@ -87,10 +88,14 @@ class Figure extends Tree {
     if (this.data) {
       this.data.subscribe(
         new Watcher(
-          this.data.cache, // 监听当前数据之中的cache存储模块。
-          () => {
+          _t.data.cache, // 监听当前数据之中的cache存储模块。
+          function () {
             // 拷贝当前参数数值。
-            return Object.assign({}, this)
+            const keys = Object.keys(this)
+            if (this[keys[0]] !== undefined) {
+              void 0
+            }
+            return Object.assign({}, _t)
           },
           (_result) => {
             // TODO:需要将当前figure变动通知到drawing内容。
@@ -117,7 +122,7 @@ class Figure extends Tree {
   }
 
   /** *********************路径参数管理与监听********************* */
-  set path (nPath) {
+  setPath (nPath) {
     let willUpdate = false
     if (!this.drawPath) {
       this.drawPath = nPath ? new DrawPath(nPath) : null
@@ -137,7 +142,7 @@ class Figure extends Tree {
     return new Watcher(
       this.drawPath,
       function () {
-        return this.getPath()
+        return _t.getPath()
       },
       (_result) => {
         // TODO:通知当前内容做更新
@@ -147,35 +152,37 @@ class Figure extends Tree {
   }
 
   /** 展示设置 */
-  set display (showing) {
+  setDisplay (showing) {
     // 当前节点与子节点全部隐藏
     if (showing !== this._display) {
-      this.notify(() => {
+      this.notify(function () {
         this._display = showing
       }, false)
     }
     this.root().render()
   }
 
-  get display () {
+  getDisplay () {
     return this._display
   }
 
   /** *************************当前对象层级关系设置 **********************/
   // 设置父节点，并更新parameter的相关参数。
-  set parent (pa) {
-    super.parent = pa
-    if (!pa.display) { // 设置当前的绘制展示内容
-      this.display = pa.display
+  setParent (pa) {
+    super.setParent(pa)
+    if (!pa.getDisplay()) { // 设置当前的绘制展示内容
+      this.setDisplay(pa.getDisplay())
     }
-    this.connection() // 因为更新parameter的内容，所以自动调用回调通知。
+    // this.connection() // 因为更新parameter的内容，所以自动调用回调通知。
+    this.dataSupport() // 更新上下文之中的环境。
   }
 
   // 代理方法,开放指定的相关参数给到调用方，限制接口展示方便获取。
   figureProxy () {
     const CustomerHandler = {
       set (target, key, value) {
-        return (target.data.cache[key] = value)
+        target.data.cache[key] = value
+        return true
       },
       get (target, key) {
         if (key === 'isPointInFigure') {
@@ -190,13 +197,13 @@ class Figure extends Tree {
     return acquistion(this, CustomerHandler)
   }
 
-  isPointInFigure (point, ctx = calculateCanvas.canvas.dom.getContext('2d')) {
+  isPointInFigure (point, ctx = calculateCanvas.dom.getContext('2d')) {
     // ctx将直接使用计算绘板代替
     let result = false
 
     // 通知内容以进行绘制。
-    this.notify(() => {
-      if (this.drawPath && this.display) {
+    this.notify(function () {
+      if (this.drawPath && this.getDisplay()) {
         this.drawPath.drawing(
           ctx,
           this.data.cache,
@@ -207,33 +214,47 @@ class Figure extends Tree {
             }
           }
         )
+        if (result) {
+          throw new Exception(
+            'BreakingException',
+            'Has checked to be sure for result',
+            Exception.level.Info,
+            false
+          )
+        }
       }
     }, false)
     return result
   }
 
   // 传递画笔并绘制当前内容，树的层级越高，绘制的层级也相对越高。
-  drawing (ctx) {
+  drawing () {
     // 以广度遍历的形式从下往上绘制内容。
-    this.notify(
-      () => {
-        this.display &&
-          this.drawPath &&
-          this.drawPath.drawing(ctx, this.data.cache) // 当前节点的绘制
-      },
-      true,
-      false,
-      true
-    )
+    const _t = this
+    return (ctx) => {
+      _t.notify(
+        function () {
+          if (this && this.getDisplay && this.getDisplay()) {
+            if (this.drawPath) {
+              this.drawPath.drawing(ctx, this.data.cache)
+            } // 当前节点的绘制
+          }
+        },
+        true,
+        false,
+        true
+      )
+    }
   }
 
   /** **********************动画相关操作******************** */
   animateOperation () {
+    const _t = this
     each(Object.assign({}, AnimationOperation, {
       Add: 'add',
       Remove: 'remove'
-    }))((val, key) => {
-      this['animate' + capacity(key)] = this.animating(val)
+    }))((_val, key) => {
+      _t['animate' + key] = _t.animating(key)
     })
   }
 
@@ -246,9 +267,9 @@ class Figure extends Tree {
       if (operation in AnimationOperation) {
         // 如果是动画进程
         this.notify(
-          () => {
+          function () {
             // meta用来传递多个参数，但不一定有参数内容，依据的接口内容进行传递。
-            this.animation[operation](name, ...meta)
+            this.animation.dispatch(name, ...meta)
           },
           false,
           false,
@@ -263,10 +284,10 @@ class Figure extends Tree {
 
   /** **********************事件相关操作******************** */
   // 事件触发。
-  dispatchEvents (name, ...meta) {
+  dispatchEvents (name, eve, ...meta) {
     this.notify(
-      () => {
-        this.events.dispatch(name, ...meta)
+      function () {
+        this.events.dispatch(name, eve, ...meta)
       },
       false,
       false,
@@ -278,7 +299,7 @@ class Figure extends Tree {
 export default Figure
 
 // 依据获取内容。
-export function toFigure (setting) {
+export function toFigure (setting, parent) {
   const figure = new Figure(
     setting.name,
     setting.data,
@@ -287,10 +308,11 @@ export function toFigure (setting) {
     setting.animate,
     setting.display
   )
+  if (parent) figure.setParent(parent)
   if (setting.children && setting.children.length > 0) {
     each(setting.children)((set) => {
-      if (!setting.display) set.display = false
-      figure.child = toFigure(set)
+      if (!isNil(setting.display) && !setting.display) set.display = false
+      toFigure(set, figure)
     })
   }
   return figure

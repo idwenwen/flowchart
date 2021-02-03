@@ -1,12 +1,23 @@
-import { UUID } from '@cc/tools'
-import { toArray } from 'lodash'
+import UUID from '@/tools/uuid'
+import { toArray } from '../../../../tools/extension/iteration'
 
 const PanelId = new UUID((index) => `panel_${index}`)
 
+function getLeftTop (width, height, position) {
+  if (!position) {
+    return PanelManager.point
+  } else {
+    return [
+      position[0] - width / 2,
+      position[1] - height / 2
+    ]
+  }
+}
+
 // 当前组件主要用于管理Panel内容的相关推算以及diagram之中Panel对象的修改
 class PanelManager {
-  static width = 400;
-  static height = 150;
+  static width = 300;
+  static height = 60;
   static point = [0, 0];
 
   // uuid: string; // 唯一标识符
@@ -21,27 +32,34 @@ class PanelManager {
     width,
     height,
     point,
+    attrs,
     style = {},
     transform = {},
     classes
   ) {
     return {
       id: this.uuid,
-      attrs: {
-        width: width,
-        height: height
-      },
-      style: Object.assign(
+      attrs: Object.assign({}, attrs, {
+        width: width || PanelManager.width,
+        height: height || PanelManager.height,
+        point
+      }),
+      styles: Object.assign(
         {
           position: 'absolute', // 绝对布局形式
-          top: point[1] + 'px', // 绝对布局上偏移
-          left: point[0] + 'px', // 绝对布局左偏移
+          top () {
+            return this.attrs.point[1] + 'px'
+          }, // 绝对布局上偏移
+          left () {
+            return this.attrs.point[0] + 'px'
+          }, // 绝对布局左偏移
           width () {
-            return this.width + 'px'
+            return this.attrs.width + 'px'
           },
           height () {
-            return this.height + 'px'
-          }
+            return this.attrs.height + 'px'
+          },
+          'z-index': 2
         },
         style
       ),
@@ -53,12 +71,14 @@ class PanelManager {
   toSetting (
     width = PanelManager.width,
     height = PanelManager.height,
-    point = PanelManager.point,
+    point,
+    attrs,
     style,
     transform,
     classes
   ) {
-    return this.panelSetting(width, height, point, style, transform, classes)
+    point = getLeftTop(width, height, point)
+    return this.panelSetting(width, height, point, attrs, style, transform, classes)
   }
 }
 

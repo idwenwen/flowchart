@@ -2,7 +2,7 @@ import { combineInto } from '../../../tools/extension/define'
 import { removeStyle, setStyle } from '../../../tools/extension/dom'
 import { acquistion } from '../../../tools/extension/proxy'
 import Observer from '../../../tools/observer'
-import { Watcher } from '../../../tools/observer/watcher'
+import Watcher from '../../../tools/observer/watcher'
 
 const { default: Attributes } = require('./attrs')
 
@@ -12,6 +12,7 @@ class Styles extends Attributes {
     this.cache = imply
     // 当前是否已经有在监听。
     this.watching = null
+    this._hasProxy = false
   }
 
   setStyle (dom) {
@@ -23,26 +24,29 @@ class Styles extends Attributes {
   }
 
   accordingTo (context) {
+    const _t = this
     this.watching = new Watcher(context, this.attrs, (_result) => {
-      combineInto(this.cache, _result)
+      combineInto(_t.cache, _result)
     })
   }
 
   subscribe () {
-    if (!(this.cache instanceof Proxy)) {
+    if (!this._hasProxy) {
       this.cache = new Observer(this.cache).observer
+      this._hasProxy = true
     }
   }
 
   proxy () {
     const defaultHandler = {
       set (target, key, value) {
-        this.attrs[key] = value
         if (target.watching) {
-          target.watching.imply(key, value)
+          target.watching.getter(key, value)
         } else {
+          target.attrs[key] = value
           target.cache[key] = value
         }
+        return true
       },
       get (target, key) {
         return target.cache[key]

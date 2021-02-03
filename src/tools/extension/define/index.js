@@ -21,9 +21,8 @@ const DEFAULT_SETTING = {
 function toSetting (descriptor) {
   // 转变为标准的属性描述符对象内容
   descriptor = toObject(descriptor)
-  descriptor =
-    assign({}, DEFAULT_SETTING, descriptor)(descriptor.set || descriptor.get) &&
-    delete descriptor.writable
+  descriptor = assign({}, DEFAULT_SETTING, descriptor)
+  if (descriptor.set || descriptor.get) { delete descriptor.writable }
   return descriptor
 }
 
@@ -33,12 +32,16 @@ function toSetting (descriptor) {
  */
 function toObject (descriptor) {
   // 判定当前内容是否为传统意义的属性描述符内容
-  if (
-    !isObject(descriptor) ||
-    !descriptor.value ||
-    !descriptor.set ||
-    !descriptor.get
-  ) {
+  if (isObject(descriptor)) {
+    const keys = Object.keys(descriptor)
+    if (
+      !(keys.indexOf('value') >= 0 ||
+      keys.indexOf('set') >= 0 ||
+      keys.indexOf('get') >= 0)
+    ) {
+      return { value: descriptor }
+    }
+  } else {
     return { value: descriptor }
   }
   return descriptor

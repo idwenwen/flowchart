@@ -38,7 +38,7 @@ function RGBToA (color) {
     return color
   } else if (color.search('rgb') >= 0) {
     // It is rgb
-    return `rgba(${color.replace(repRgb, '')}, 1)`
+    return `rgba(${color.replace(repRgb, '')},1)`
   } else {
     return false
   }

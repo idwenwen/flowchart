@@ -1,22 +1,24 @@
-import { cloneDeep, eq, isObject, toArray } from 'lodash'
+import { cloneDeep, eq, isObject } from 'lodash'
 import { setAttr } from '../../../tools/extension/dom'
-import { each } from '../../../tools/extension/iteration'
+import { each, toArray } from '../../../tools/extension/iteration'
 import { acquistion } from '../../../tools/extension/proxy'
 import Observer from '../../../tools/observer'
 
 export default class Attributes {
   // attrs: object 属性存储对象
   constructor (attrs) {
-    this.attrs = cloneDeep(attrs)
+    this.attrs = cloneDeep(attrs) || {}
+    this._hasProxy = false
   }
 
   set (nameOrObj, value) {
+    const _t = this
     if (isObject(nameOrObj)) {
-      each(nameOrObj)((val, key) => {
-        this.set(key, val)
+      each(nameOrObj)(function (val, key) {
+        _t.set(key, val)
       })
-    } else if (!eq(this.attrs[name], value)) {
-      this.attrs[name] = value
+    } else if (!eq(this.attrs[nameOrObj], value)) {
+      this.attrs[nameOrObj] = value
     }
   }
 
@@ -44,15 +46,17 @@ export default class Attributes {
   }
 
   subscribe (ignore) {
-    if (!(this.attrs instanceof Proxy)) {
+    if (!this._hasProxy) {
       this.attrs = new Observer(this.attrs, ignore).observer
+      this._hasProxy = true
     }
   }
 
   proxy () {
     const defaultHandler = {
       set (target, key, value) {
-        return (target.attrs[key] = value)
+        target.attrs[key] = value
+        return true
       },
       get (target, key) {
         return target.attrs[key]

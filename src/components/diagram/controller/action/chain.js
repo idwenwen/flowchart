@@ -1,7 +1,7 @@
 import { toAction } from './action'
-import { toArray, eq, remove } from 'lodash'
-import { each } from '../../../../tools/extension/iteration'
-import { UUID } from '../../../../tools/uuid'
+import { eq, remove } from 'lodash'
+import { each, toArray } from '../../../../tools/extension/iteration'
+import UUID from '../../../../tools/uuid'
 import Player from './player'
 
 // 动作链的唯一标识
@@ -23,16 +23,17 @@ class Chain extends Player {
   }
 
   // 上下文设置
-  set context (newContent) {
-    super.context = newContent
+  setContext (newContent) {
+    super.setContext(newContent)
     // 同步单个Action的上下文环境
     each(this.list)((play) => {
-      play.context = this._context
+      play.action.setContext(this._context)
     })
   }
 
   // 添加Action内容。
   add (actions, fromIndex, once = false) {
+    const _t = this
     // 判定当前的加入的位置。
     let start = fromIndex
       ? fromIndex < 0
@@ -44,13 +45,19 @@ class Chain extends Player {
 
     // 添加新的动作内容
     if (Array.isArray(actions)) {
-      each(actions)((action, index) => {
-        this.add(action, start + index)
+      each(actions)(function (action, index) {
+        _t.add(action, start + index)
       })
     } else {
-      actions.context = this.context
+      let origin = actions
+      if (actions instanceof Player) {
+        actions.setContext(this.getContext())
+      } else {
+        actions.context = this.getContext()
+        origin = toAction(actions)
+      }
       this.list.splice(start, 0, {
-        action: actions instanceof Player ? actions : toAction(actions), // 设置好上下文环境并转换称为Playable类型
+        action: origin, // 设置好上下文环境并转换称为Playable类型
         once: once
       })
     }
@@ -64,24 +71,28 @@ class Chain extends Player {
 
   // 帧内容播放
   act (...meta) {
+    const _t = this
     this.current = 0
     let player = null
     return super.loading(
       (current) => {
-        if (!player) player = this.list[this.current].action.act(...meta)
+        if (!player) player = _t.list[_t.current].action.act(...meta)
         const result = player(current)
         if (!result) {
           // 如果当前的帧动作为单次动作，则运行完成之后直接删除，否则当期action游标移动一位
-          this.list[this.current].once
-            ? this.list.splice(this.current, 1)
-            : (this.current += 1)
+          if (_t.list[_t.current].once) {
+            _t.list.splice(_t.current, 1)
+          } else {
+            _t.current += 1
+            player = null
+          }
         }
         // 如果当前游标移动到末尾，则表示当前的内容结束。
-        if (this.current >= this.list.length) return false
+        if (_t.current >= _t.list.length) return false
         else return true
       },
       () => {
-        this.current = 0
+        _t.current = 0
         player = null
       }
     )

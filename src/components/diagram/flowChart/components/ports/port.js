@@ -1,7 +1,8 @@
 import { portType } from '.'
 import { ComponentsStatus } from '..'
 import PortHint from './portHint'
-import { pushLink, LinkingSuccess, modifiedInto, getCurrentLink } from '../../canvas'
+import { pushLink, LinkingSuccess, modifiedInto, getCurrentLink, getMainCanvas } from '../../canvas'
+import { compareToPos } from '../../utils'
 
 const DATA_PORT_COLOR = '#E6B258'
 const MODEL_PORT_COLOR = '#00cbff'
@@ -25,6 +26,7 @@ class Port {
     this.multiple = multiple
     this.role = role
     this.container = container
+    this.hasConnect = false
   }
 
   getParameter () {
@@ -40,7 +42,16 @@ class Port {
             ? DATA_PORT_COLOR
             : MODEL_PORT_COLOR
       },
-      image: _t.multiple && null, // 引入当前的数据内容
+      image () {
+        if (_t.multiple) {
+          if (_t.type.toLowerCase().match('data')) {
+            return require('@/icon/mult_data.svg')
+          } else {
+            return require('@/icon/mult_model.svg')
+          }
+        }
+        return null
+      }, // 引入当前的数据内容
       radius () {
         return this.radius
       },
@@ -58,30 +69,29 @@ class Port {
   getEvents () {
     const _t = this
     const events = {
-      linkFrom: function (eve, startpos, pos2) {
+      linkFrom: function (eve, checkPos, startpos, pos2) {
         // 表示从当前点连接出去。
         // 起始点是当前的center内容。
-        if (_t.container.currentPort) return void 0
-        if (this.isPointInFigure(startpos)) {
+        if (_t.container.currentPort || (!_t.multiple && _t.hasConnect)) return void 0
+        if (this.isPointInFigure(checkPos)) {
           _t.container.currentPort = _t.name
-          if (_t.container.isMoving) return void 0
-          if (this.isPointInFigure(startpos[0], startpos[1])) {
-            pushLink(startpos, pos2, _t.container, _t.name, _t.type)
-            _t.container.CheckHint(_t.type)
-          } else {
-            _t.container = true
-          }
+          pushLink(
+            compareToPos(this.center, _t.container.panelManager.dom, getMainCanvas().canvas),
+            pos2, _t, _t.container.flowPanel)
+          _t.container.checkHint(eve, _t.type)
+        } else {
+          _t.container.currentPort = false
         }
-        // 通知当前全局移动事件，调整当前的移动事件以及鼠标事件的逻辑。
-        // 启动当前提示动画。
       },
       linkIntoPort: function (eve, name) {
         if (name !== this.name) { return void 0 }
         // 设置当前的内容到连接线段。
-        getCurrentLink().changeEnd(this.center)
-        modifiedInto(this.port.container)
+        getCurrentLink().changeEnd(
+          compareToPos(this.center, _t.container.panelManager.dom, getMainCanvas().canvas)
+        )
+        modifiedInto(_t)
         LinkingSuccess()
-        this.container.hintFinished()
+        _t.container.hintFinished()
       }
     }
     return events

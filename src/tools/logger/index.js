@@ -1,5 +1,6 @@
-import { SeverityLevel, isFunction } from '../exception/index'
+import { SeverityLevel } from '../exception/index'
 import * as display from '../console'
+import isFunction from 'lodash/isFunction'
 import { each } from '../extension/iteration'
 
 // Default level for log

@@ -1,5 +1,5 @@
-import { each } from '../iteration'
-import { toArray, isObject, trim, remove, eq } from 'lodash'
+import { toArray, each } from '../iteration'
+import { isObject, trim, remove, eq, isArray } from 'lodash'
 
 // 创建新的dom元素内容
 export function create (name) {
@@ -49,20 +49,23 @@ export function removeAttr (dom, name) {
 }
 
 export function getStyle (dom) {
-  const origin = dom.getAttribute('style').split(';')
-  if (origin[origin.length - 1]) origin.pop() // 去除掉最后的空字符串
+  let origin = dom.getAttribute('style')
+  if (origin) origin = origin.split(';')
+  if (isArray(origin) && origin[origin.length - 1]) origin.pop() // 去除掉最后的空字符串
   const result = {}
-  each(origin)((val) => {
-    const item = val.split(':')
-    if (item.length === 2) {
-      result[trim(item[0])] = trim(item[1])
-    }
-  })
+  if (origin) {
+    each(origin)((val) => {
+      const item = val.split(':')
+      if (item.length === 2) {
+        result[trim(item[0])] = trim(item[1])
+      }
+    })
+  }
   return result
 }
 
 export function setStyle (dom, keyOrMult, value) {
-  const origin = this.getStyle(dom)
+  const origin = getStyle(dom)
   if (isObject(keyOrMult)) {
     each(keyOrMult)((val, key) => {
       origin[key] = val
