@@ -1,3 +1,4 @@
+import { toArray } from 'lodash'
 import { Exception } from '../../../tools/exception'
 import { each } from '../../../tools/extension/iteration'
 import CanvasPanel, { setMainCanvas } from './canvas/index'
@@ -23,7 +24,9 @@ class Chart {
     const res = []
     const all = globalComponents.comps
     each(all)(function (item, key) {
-      res.push(item.getComponentInfo())
+      each(toArray(item))(function (val) {
+        res.push(val.getComponentInfo())
+      })
     })
     console.log(res)
     return res

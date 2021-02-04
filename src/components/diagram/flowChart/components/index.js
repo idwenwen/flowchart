@@ -8,7 +8,7 @@ import PanelOperation from '../panelManager/panelOperation'
 import SubCompManager from '../subCompManager'
 import { getPos } from '../utils'
 import { getMainCanvas, linkingFail, setChoosen } from '../canvas'
-import { flatten } from 'lodash'
+import { flatten, remove } from 'lodash'
 import { toArray } from '../../../../tools/extension/iteration'
 
 // 组件状态
@@ -26,10 +26,13 @@ export const Role = {
 }
 
 function checkLinking (comp) {
+  debugger
   const res = [comp.name]
   each(comp.into)(val => {
-    res.push(val.from.name)
-    res.push(...checkLinking(val.from))
+    each(toArray(val))((item) => {
+      res.push(item.from.name)
+      res.push(...checkLinking(item.from))
+    })
   })
   return Array.from(new Set(flatten(res)))
 }
@@ -42,21 +45,22 @@ class GlobalComponentsManage {
   }
 
   getDefaultName (type) {
-    const count = this.count[type] || 0
-    this.count[type] = count + 1
+    const count = this.comps.get(type) ? this.comps.get(type).length : 0
     return `${type}_${count}`
   }
 
   set (type, comp) {
-    this.comps.set(type, comp)
+    const origin = this.comps.get(type) || []
+    origin.push(comp)
+    this.comps.set(type, origin)
   }
 
-  get (name) {
-    return this.comps.get(name)
+  get (type) {
+    return this.comps.get(type)
   }
 
   getValue (name, operation) {
-    operation && operation(toArray(this.get(name)))
+    return operation && operation(toArray(this.get(name)))
   }
 
   find (operation) {
@@ -73,6 +77,12 @@ class GlobalComponentsManage {
       }
     })
     return find
+  }
+
+  delete (type, name) {
+    let origin = this.comps.get(type)
+    remove(origin, (item) => item.name === name)
+    this.comps.set(type, origin)
   }
 }
 
@@ -118,7 +128,7 @@ class Components extends PanelOperation {
     this.outto = {} // 连接输出Linking[]，相关内容为接口Figure对象。
     this.subConnect = new SubCompManager()
     this.checkedLinkFrom = false
-    globalComponents.set(this.type, this)
+    globalComponents.set(type, this)
 
     // 当前组件状态记录
     this.isChoosing = false // 是否被选中的状态
@@ -150,6 +160,7 @@ class Components extends PanelOperation {
       height: this.panelManager.attrs.height
     }
     const dependency = {}
+    debugger
     if (Object.keys(this.outto).length > 0) {
       each(this.outto)(function (linkings, type) {
         dependency[type] = []
@@ -336,6 +347,7 @@ class Components extends PanelOperation {
           const posForWhole = getPos(eve, getMainCanvas().container)
           // 坐标不同表示移动了。
           _t.isMoveing = true
+          debugger
           // 判定当前是否有连出操作
           if (!_t.checkedLinkFrom) {
             _t.diagram.dispatchEvents('linkFrom', eve, _t.choosePoisiton, _t.accordingToWholePos, posForWhole)
@@ -414,12 +426,32 @@ class Components extends PanelOperation {
     }
   }
 
+  deleteLinkOut (type, link) {
+    if (this.outto) {
+      const list = this.outto[type]
+      remove(list, (props) => props.uuid === link.uuid)
+      if (list.length === 0) {
+        delete this.outto[type]
+      }
+    }
+  }
+
   linkIn (Linking) {
     const endPort = Linking.endPort
     this.into[endPort.type] = this.into[endPort.type] || []
     const index = this.into[endPort.type].findIndex(item => item.uuid === Linking.uuid)
     if (index < 0) {
       this.into[endPort.type].push(Linking)
+    }
+  }
+
+  deleteLinkIn (type, link) {
+    if (this.into) {
+      const list = this.into[type]
+      remove(list, (props) => props.uuid === link.uuid)
+      if (list.length === 0) {
+        delete this.into[type]
+      }
     }
   }
 
@@ -439,10 +471,12 @@ class Components extends PanelOperation {
     // 通过全局component判断剩余组件是否可以触发portHint事件。
     const notHint = checkLinking(this)
     each(globalComponents.comps)((val, key) => {
-      if (!notHint.find(item => item === val.name)) {
-        // val.diagram.animateDispatch('linkHint', type)
-        val.diagram.dispatchEvents('linkHint', eve, type)
-      }
+      each(val)(item => {
+        if (!notHint.find(eachitem => eachitem === item.name)) {
+          // val.diagram.animateDispatch('linkHint', type)
+          item.diagram.dispatchEvents('linkHint', eve, type)
+        }
+      })
     })
   }
 
@@ -458,6 +492,26 @@ class Components extends PanelOperation {
 
   unchoose () {
     this.diagram.dispatchEvents('unchoose')
+  }
+
+  deleteComponent () {
+    debugger
+    each(this.outto)(function (val, key) {
+      while (val.length > 0) {
+        val.deleteComponent()
+      }
+    })
+    each(this.into)(function (val, key) {
+      while (val.length > 0) {
+        val.deleteComponent()
+      }
+    })
+    this.outto = {}
+    this.into = {}
+    getMainCanvas().container.removeChild(this.panelManager.dom)
+    this.panelManager = null
+    this.diagram.clearTree && this.diagram.clearTree()
+    globalComponents.delete(this.type, this.name)
   }
 }
 

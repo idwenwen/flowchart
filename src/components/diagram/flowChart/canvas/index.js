@@ -28,10 +28,12 @@ export class CanvasPanel {
     const presetstyle = {
       position: 'relative',
       width: parentStyle.width + 'px',
-      height: parentStyle.height + 'px'
+      height: parentStyle.height + 'px',
+      outline: '0 none'
     }
     const container = create('div') // 创建画布容器
     setStyle(container, presetstyle)
+    setAttr(container, 'tabindex', '1')
     this.container = container
 
     const canvas = create('canvas')
@@ -84,9 +86,17 @@ export class CanvasPanel {
           CanvasPanel.choosen = null
         }
         CanvasPanel.choosenChange = false
+      },
+      'keydown': function (eve) {
+        const keyCode = eve.keyCode
+        if (keyCode === 8 || keyCode === 27 || keyCode === 46) {
+          if (CanvasPanel.choosen) {
+            CanvasPanel.choosen.deleteComponent()
+          }
+        }
       }
     }
-    addEvents(this.parent, events)
+    addEvents(this.container, events)
   }
 }
 

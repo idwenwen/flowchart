@@ -27,6 +27,10 @@ class GlobalLinking {
   get (name) {
     return this.comps.get(name)
   }
+
+  delete (name) {
+    this.comps.delete(name)
+  }
 }
 
 export const globalLinking = new GlobalLinking()
@@ -121,8 +125,10 @@ class Linking {
         const curret = getCurrentLink()
         if (eve.target === curret.panelManager.dom) {
           each(globalComponents.comps)(function (val, key) {
-            val.diagram.dispatchEvents('linkInto', eve, getPos(eve, val.panelManager.dom))
-            val.diagram.dispatchEvents('linkHide')
+            each(val)(content => {
+              content.diagram.dispatchEvents('linkInto', eve, getPos(eve, content.panelManager.dom))
+              content.diagram.dispatchEvents('linkHide')
+            })
           })
           _t.diagram.dispatchEvents('linkFailedCheck')
         }
@@ -225,6 +231,23 @@ class Linking {
 
   unchoose () {
     this.diagram.dispatchEvents('unchoose')
+  }
+
+  deleteComponent () {
+    this.from.deleteLinkOut(this.fromPort.type, this)
+    this.end.deleteLinkIn(this.endPort.type, this)
+    this.fromPort.hasConnect = false
+    this.endPoint.hasConnect = false
+
+    getMainCanvas().container.removeChild(this.panelManager.dom)
+
+    this.from = null
+    this.end = null
+    this.endPoint = null
+    this.fromPoint = null
+    this.panelManager = null
+    this.diagram.clearTree && this.diagram.clearTree()
+    globalLinking.delete(this.uuid)
   }
 }
 

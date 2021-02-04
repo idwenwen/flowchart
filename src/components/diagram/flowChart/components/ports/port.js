@@ -72,7 +72,10 @@ class Port {
       linkFrom: function (eve, checkPos, startpos, pos2) {
         // 表示从当前点连接出去。
         // 起始点是当前的center内容。
-        if (_t.container.currentPort || (!_t.multiple && _t.hasConnect)) return void 0
+        if (_t.container.currentPort) return void 0
+        if (!_t.multiple && _t.hasConnect) {
+          _t.container.currentPort = false
+        }
         if (this.isPointInFigure(checkPos)) {
           _t.container.currentPort = _t.name
           pushLink(
