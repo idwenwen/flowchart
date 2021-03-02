@@ -26,7 +26,6 @@ export const Role = {
 }
 
 function checkLinking (comp) {
-  debugger
   const res = [comp.name]
   each(comp.into)(val => {
     each(toArray(val))((item) => {
@@ -160,7 +159,6 @@ class Components extends PanelOperation {
       height: this.panelManager.attrs.height
     }
     const dependency = {}
-    debugger
     if (Object.keys(this.outto).length > 0) {
       each(this.outto)(function (linkings, type) {
         dependency[type] = []
@@ -347,7 +345,6 @@ class Components extends PanelOperation {
           const posForWhole = getPos(eve, getMainCanvas().container)
           // 坐标不同表示移动了。
           _t.isMoveing = true
-          debugger
           // 判定当前是否有连出操作
           if (!_t.checkedLinkFrom) {
             _t.diagram.dispatchEvents('linkFrom', eve, _t.choosePoisiton, _t.accordingToWholePos, posForWhole)
@@ -495,7 +492,6 @@ class Components extends PanelOperation {
   }
 
   deleteComponent () {
-    debugger
     each(this.outto)(function (val, key) {
       while (val.length > 0) {
         val.deleteComponent()

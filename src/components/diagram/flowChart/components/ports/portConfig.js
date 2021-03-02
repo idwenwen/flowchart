@@ -175,7 +175,7 @@ function getModelOutput (type, _allSignlePort = false) {
     res.push({
       name: 'model|0_Output',
       tip: 'Model Output',
-      type: portType.modelOut,
+      type: portType.ModelOutput,
       multiple
     })
   }

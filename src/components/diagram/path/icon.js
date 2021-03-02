@@ -1,3 +1,5 @@
+import { isString } from 'lodash'
+
 export default {
   name: 'icon',
   draw: {
@@ -6,7 +8,15 @@ export default {
         par.center[0] - par.width / 2,
         par.center[1] - par.height / 2
       ]
-      ctx.drawImage(par.image, topLeft[0], topLeft[1], par.width, par.height)
+      if (isString(par.image)) {
+        let img = new Image()
+        img.onload = function () {
+          ctx.drawImage(img, topLeft[0], topLeft[1], par.width, par.height)
+        }
+        img.src = par.image
+      } else {
+        ctx.drawImage(par.image, topLeft[0], topLeft[1], par.width, par.height)
+      }
     },
     paramFilter: {
       image: `${'?file'}`,

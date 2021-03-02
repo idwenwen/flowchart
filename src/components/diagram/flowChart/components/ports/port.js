@@ -3,6 +3,7 @@ import { ComponentsStatus } from '..'
 import PortHint from './portHint'
 import { pushLink, LinkingSuccess, modifiedInto, getCurrentLink, getMainCanvas } from '../../canvas'
 import { compareToPos } from '../../utils'
+import { icons } from '../../loadImage'
 
 const DATA_PORT_COLOR = '#E6B258'
 const MODEL_PORT_COLOR = '#00cbff'
@@ -45,9 +46,9 @@ class Port {
       image () {
         if (_t.multiple) {
           if (_t.type.toLowerCase().match('data')) {
-            return require('@/icon/mult_data.svg')
+            return icons.multData
           } else {
-            return require('@/icon/mult_model.svg')
+            return icons.multModel
           }
         }
         return null
@@ -81,6 +82,7 @@ class Port {
           pushLink(
             compareToPos(this.center, _t.container.panelManager.dom, getMainCanvas().canvas),
             pos2, _t, _t.container.flowPanel)
+          debugger
           _t.container.checkHint(eve, _t.type)
         } else {
           _t.container.currentPort = false

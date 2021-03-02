@@ -4,6 +4,7 @@ import { each } from '../../../tools/extension/iteration'
 import CanvasPanel, { setMainCanvas } from './canvas/index'
 import Components, { globalComponents } from './components'
 import { linkComps } from './linking'
+import { loadImages } from './loadImage'
 
 class Chart {
   constructor (dom, role, allSinglePort = false) {
@@ -11,6 +12,14 @@ class Chart {
     setMainCanvas(this.flowPanel)
     this.role = role
     this.allSinglePort = allSinglePort
+    loadImages({
+      complete: require('@/icon/complete.svg'),
+      disableComplete: require('@/icon/disable_complete.svg'),
+      disableError: require('@/icon/disable_error.svg'),
+      error: require('@/icon/error.svg'),
+      multData: require('@/icon/mult_data.svg'),
+      multModel: require('@/icon/mult_model.svg')
+    })
   }
 
   addComp (type, status, disable, name, width, height, position) {
