@@ -77,12 +77,12 @@ class Port {
         if (!_t.multiple && _t.hasConnect) {
           _t.container.currentPort = false
         }
+        debugger
         if (this.isPointInFigure(checkPos)) {
           _t.container.currentPort = _t.name
           pushLink(
             compareToPos(this.center, _t.container.panelManager.dom, getMainCanvas().canvas),
             pos2, _t, _t.container.flowPanel)
-          debugger
           _t.container.checkHint(eve, _t.type)
         } else {
           _t.container.currentPort = false

@@ -12,7 +12,7 @@ class SubCompManager {
   }
 
   /**
-   *
+   * 添加辅助组件
    * @param {Component} main 主要的components内容
    * @param {object} sub 辅组件内容。但是有一个相关的位置映射换算。
    * {
@@ -33,6 +33,7 @@ class SubCompManager {
     }
   }
 
+  // 依据subID删除已有的副组件内容。
   remove (main, subId) {
     const list = this.connect.get(main)
     if (list.length > 0) {
@@ -46,6 +47,7 @@ class SubCompManager {
     }
   }
 
+  // 通知当前子组件内容进行更新。
   notify (main) {
     const list = this.connect.get(main)
     each(list)(val => {
@@ -53,6 +55,7 @@ class SubCompManager {
     })
   }
 
+  // 更新位置信息。
   updatePosition (main, sub) {
     each(toArray(sub))((val) => {
       const res = {}

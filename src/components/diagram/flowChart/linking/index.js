@@ -239,7 +239,7 @@ class Linking {
     this.fromPort.hasConnect = false
     this.endPoint.hasConnect = false
 
-    getMainCanvas().container.removeChild(this.panelManager.dom)
+    getMainCanvas().container.removeChild(this.panelManager.domContainer)
 
     this.from = null
     this.end = null
@@ -291,7 +291,7 @@ export function linkComps (fromComp, toComp, fromPort, toPort) {
     })
     return res
   })()
-  getMainCanvas().container.append(linking.panelManager.dom)
+  getMainCanvas().container.append(linking.panelManager.domContainer)
   linking.diagram.dispatchEvents('linkSuccessed')
   return linking
 }

@@ -184,7 +184,7 @@ class Components extends PanelOperation {
   setflowPanel (panel) {
     this.flowPanel = panel
     if (this.panelManager) {
-      this.flowPanel.append(this.panelManager.dom)
+      this.flowPanel.append(this.panelManager.domContainer)
     }
   }
 
@@ -458,7 +458,7 @@ class Components extends PanelOperation {
     this.diagram = new Diagram(panelSetting, diagramSetting)
     this.panelManager = this.diagram.panel
     if (this.flowPanel) {
-      this.flowPanel.append(this.panelManager.dom)
+      this.flowPanel.append(this.panelManager.domContainer)
     }
     this.diagram.dispatchEvents('changeStatus', this.firstTimeToStatus)
   }
@@ -504,7 +504,7 @@ class Components extends PanelOperation {
     })
     this.outto = {}
     this.into = {}
-    getMainCanvas().container.removeChild(this.panelManager.dom)
+    getMainCanvas().container.removeChild(this.panelManager.domContainer)
     this.panelManager = null
     this.diagram.clearTree && this.diagram.clearTree()
     globalComponents.delete(this.type, this.name)

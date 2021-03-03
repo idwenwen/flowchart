@@ -200,17 +200,30 @@ class Figure extends Tree {
   isPointInFigure (point, ctx = calculateCanvas.dom.getContext('2d')) {
     // ctx将直接使用计算绘板代替
     let result = false
+    // const _t = this
 
     // 通知内容以进行绘制。
     this.notify(function () {
+      const __t = this
       if (this.drawPath && this.getDisplay()) {
         this.drawPath.drawing(
           ctx,
           this.data.cache,
           {
           // 在afterDraw生命周期之中判定当前点内容是否在路径之中
-            afterDraw: (ctxx) => {
-              result = ctxx.isPointInPath(point[0], point[1])
+            afterDraw: function (ctxx) {
+              if (!__t.drawPath || __t.drawPath._origin !== 'icon') {
+                result = ctxx.isPointInPath(point[0], point[1])
+              } else {
+                const data = __t.data.cache
+                const center = data.center
+                const width = data.width
+                const height = data.height
+                result = point[0] >= (center[0] - width / 2) &&
+                  point[0] <= (center[0] + width / 2) &&
+                  point[1] >= center[1] - height / 2 &&
+                  point[1] <= center[1] + height / 2
+              }
             }
           }
         )

@@ -1,5 +1,5 @@
 import { throttle, isArray, isNil } from 'lodash'
-import { create } from '../../../tools/extension/dom'
+import { create, setAttr, setStyle } from '../../../tools/extension/dom'
 import { each } from '../../../tools/extension/iteration'
 import Watcher from '../../../tools/observer/watcher'
 import { default as Attributes } from './attrs'
@@ -16,7 +16,7 @@ class Panel {
   // transform : 变换情况。
   // classes : 样式列表
   constructor ({id, attrs = {}, styles = {}, transform, classes, events, diagram}) {
-    this.dom = create('canvas')
+    this.createDom()
     this.id = id
     this.diagram = diagram
     if (id) attrs.id = id
@@ -34,6 +34,19 @@ class Panel {
     this.connection()
     this.willUpdate()
     this._setEvents()
+  }
+
+  createDom () {
+    const canvas = create('canvas')
+    const canvasContainer = create('div')
+    setStyle(canvas, {
+      position: 'relative',
+      width: '100%',
+      height: '100%'
+    })
+    canvasContainer.append(canvas)
+    this.domContainer = canvasContainer
+    this.dom = canvas
   }
 
   transformToStyle (styleSetting) {
@@ -81,7 +94,7 @@ class Panel {
         if (!isNil(this['origin'].attrs[keys[0]]) || true) { return this }
       }
     }, () => {
-      _t._attrs.setAttributes(_t.dom)
+      _t._attrs.setAttributes(_t.domContainer)
     })
 
     this._styles.subscribe()
@@ -94,7 +107,11 @@ class Panel {
         if (!isNil(this['origin'].cache[keys[0]]) || true) { return this }
       }
     }, (_result) => {
-      _t._styles.setStyle(_t.dom)
+      _t._styles.setStyle(_t.domContainer)
+      setAttr(_t.dom, {
+        width: parseFloat(_result.width),
+        height: parseFloat(_result.height)
+      })
       if (stylesOrigin.width !== _result.width || stylesOrigin.height !== _result.height) {
         // 当宽高变化的时候重新渲染当前内容。
         _t.diagram.render()
@@ -108,7 +125,7 @@ class Panel {
         return this
       }
     }, () => {
-      _t._classes.setClass(_t.dom)
+      _t._classes.setClass(_t.domContainer)
     })
   }
 
@@ -123,7 +140,7 @@ class Panel {
             item.call(_t, eve)
           })
         }, Panel.EventBetween)
-        this.dom.addEventListener(key, (eve) => {
+        this.domContainer.addEventListener(key, (eve) => {
           thro(eve)
         })
       })
