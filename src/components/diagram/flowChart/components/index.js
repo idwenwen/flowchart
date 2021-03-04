@@ -88,6 +88,7 @@ class GlobalComponentsManage {
   }
 }
 
+export const globalComps = new Map()
 export const globalComponents = new GlobalComponentsManage()
 
 class Components extends PanelOperation {
@@ -133,6 +134,7 @@ class Components extends PanelOperation {
     this.subConnect = new SubCompManager()
     this.checkedLinkFrom = false
     globalComponents.set(type, this)
+    globalComps.set(this.id, this)
 
     // 当前组件状态记录
     this.isChoosing = false // 是否被选中的状态
@@ -257,9 +259,6 @@ class Components extends PanelOperation {
         this.disable = false
       },
       toStatus(status) {
-        if (_t.status === ComponentsStatus.running) {
-          _t.diagram.animationFinish('loading')
-        }
         _t.status = status
         this.status = status
         if (status === ComponentsStatus.running) {
@@ -525,6 +524,7 @@ class Components extends PanelOperation {
     this.panelManager = null
     this.diagram.clearTree && this.diagram.clearTree()
     globalComponents.delete(this.type, this.name)
+    globalComps.delete(this.id)
   }
 
   addStatusIcon (type) {
@@ -556,6 +556,10 @@ class Components extends PanelOperation {
     this.subConnect.add(
       key, new MovingIcon(this, 30, 30, iconPos)
     )
+  }
+
+  changeStatus (status) {
+    this.diagram.dispatchEvents('changeStatus', status)
   }
 }
 

@@ -111,7 +111,7 @@ class ContainerContent {
         {
           variation (progress, status) {
             if (this.status === ComponentsStatus.running) {
-              (this['origin']).animationOperation('end')('loading')
+              this.origin.animateEnd('loading')
             }
             if (!originProgress) originProgress = this.progress
             if (!originColor) originColor = this.color

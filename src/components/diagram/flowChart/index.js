@@ -2,7 +2,7 @@ import { toArray } from 'lodash'
 import { Exception } from '../tools/exception'
 import { each } from '../tools/extension/iteration'
 import CanvasPanel, { setMainCanvas } from './canvas/index'
-import Components, { globalComponents } from './components'
+import Components, { globalComponents, globalComps } from './components'
 import { linkComps } from './linking'
 import { loadImages } from './loadImage'
 
@@ -22,8 +22,8 @@ class Chart {
     })
   }
 
-  addComp (type, status, disable, name, width, height, position) {
-    const comp = new Components(type, status, disable, name, this.role, false, this.allSinglePort)
+  addComp (type, status, disable, name, width, height, position, id) {
+    const comp = new Components(id, type, status, disable, name, this.role, false, this.allSinglePort)
     comp.setflowPanel(this.flowPanel)
     comp.render(width, height, position)
   }
@@ -75,6 +75,15 @@ class Chart {
             toComp.linkIn(linking)
           })
         })
+      }
+    })
+  }
+
+  setStatus (val) {
+    each(val)((val, key) => {
+      const res = globalComps.get(key)
+      if (res) {
+        res.changeStatus(val)
       }
     })
   }

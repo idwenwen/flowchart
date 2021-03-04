@@ -9,6 +9,7 @@
     <button @click="addComponent">addComponent</button>
     <button @click="showConponentInfo">showConponentInfo</button>
     <button @click="checkDiagramByConfig">loadInfo</button>
+    <button @click="changeStatus">changsStatus</button>
   </div>
 </template>
 
@@ -34,25 +35,29 @@ export default {
           type: 'reader',
           status: 'success',
           disable: false,
-          name: 'reader_0'
+          name: 'reader_0',
+          id: 'comp1'
         },
         {
           type: 'selection',
           status: 'running',
           disable: false,
-          name: 'selection_0'
+          name: 'selection_0',
+          id: 'comp2'
         },
         {
           type: 'binning',
           status: 'unrun',
           disable: false,
-          name: 'binning_0'
+          name: 'binning_0',
+          id: 'comp3'
         },
         {
           type: 'evaluation',
           status: 'fail',
           disable: false,
-          name: 'evaluation_0'
+          name: 'evaluation_0',
+          id: 'comp4'
         }
       ]
       const item = setting[this.index]
@@ -68,6 +73,12 @@ export default {
 
     checkDiagramByConfig () {
       this.chartFlow.loadInfo()
+    },
+
+    changeStatus () {
+      this.chartFlow.setStatus({
+        selection_0: 'fail'
+      })
     }
   }
 }

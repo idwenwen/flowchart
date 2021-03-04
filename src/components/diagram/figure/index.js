@@ -282,7 +282,7 @@ class Figure extends Tree {
         this.notify(
           function () {
             // meta用来传递多个参数，但不一定有参数内容，依据的接口内容进行传递。
-            this.animation.dispatch(name, ...meta)
+            this.animation[operation.toLowerCase()](name, ...meta)
           },
           false,
           false,

@@ -143,7 +143,7 @@ export function pushLink(startPos, endPos, from, Panel) {
   CanvasPanel.outFrom = from
   CanvasPanel.currentLink = new Linking(startPos, endPos, null, from)
   // 添加当前连线内容
-  Panel.append(CanvasPanel.currentLink.panelManager.dom)
+  Panel.append(CanvasPanel.currentLink.panelManager.domContainer)
 }
 
 export function getCurrentLink() {
@@ -180,7 +180,7 @@ export function LinkingSuccess() {
 export function linkingFail(panel) {
   if (CanvasPanel.currentLink && !CanvasPanel.successed) {
     panel = panel || getMainCanvas().canvas.parentNode
-    panel.removeChild(CanvasPanel.currentLink.panelManager.dom)
+    panel.removeChild(CanvasPanel.currentLink.panelManager.domContainer)
     init()
   }
 }
