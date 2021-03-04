@@ -34,15 +34,18 @@ class Parameter {
       // Getter方法，对象内容转换，并将context之中不同值赋予当前内容。
       function getCache (imm = implying) {
         const __t = this
-        const res = each(imm)((val) => {
-          if (isFunction(val)) {
-            return val.call(__t)
-          } else if (isObject(val)) {
-            return getCache(val)
-          } else {
-            return val
-          }
-        })
+        let res = null
+        if (__t !== imm) {
+          res = each(imm)((val, key) => {
+            if (isFunction(val)) {
+              return val.call(__t)
+            } else if (isObject(val) && key !== 'image') {
+              return getCache(val)
+            } else {
+              return val
+            }
+          })
+        }
         return Object.assign({}, this, res)
       },
 

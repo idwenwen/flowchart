@@ -27,6 +27,10 @@ function borderStyle (choosed, status, disable) {
 }
 
 class Border {
+  constructor (container) {
+    this.container = container
+  }
+
   toStatus () {
     let originColor
     return toChain({

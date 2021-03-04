@@ -45,7 +45,7 @@ class Content {
     return {
       data: this.toParameter(),
       events: this.toEvent(),
-      children: [new Container().toSetting(), new TextMeasure().toSetting()]
+      children: [new Container(this.container).toSetting(), new TextMeasure().toSetting()]
     }
   }
 }

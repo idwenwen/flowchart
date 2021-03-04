@@ -14,7 +14,7 @@ class Diagram extends Figure {
     each(toArray(children))(child => {
       toFigure(child, this)
     })
-    this.render() // 首次创建自动渲染。
+    // this.render() // 首次创建自动渲染。
   }
 
   // 渲染当前的图形树

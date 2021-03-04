@@ -10,6 +10,9 @@ import { getPos } from '../utils'
 import { getMainCanvas, linkingFail, setChoosen } from '../canvas'
 import { flatten, remove } from 'lodash'
 import { toArray } from '../../../../tools/extension/iteration'
+import SubIcon from '../subCompManager/typeIcon'
+import { icons } from '../loadImage'
+import MovingIcon from '../subCompManager/movingIcon'
 
 // 组件状态
 export const ComponentsStatus = {
@@ -259,6 +262,15 @@ class Components extends PanelOperation {
         if (status === ComponentsStatus.running) {
           _t.diagram.animateDispatch('loading')
         }
+        let type = null
+        if (this.status === ComponentsStatus.fail) {
+          type = this.disable ? 'disableError' : 'error'
+        } else if (this.status === ComponentsStatus.success) {
+          type = this.disable ? 'disableComplete' : 'complete'
+        }
+        if (type) {
+          _t.addStatusIcon(type)
+        }
       },
       changeStatus (status) {
         const newStatus = _t.matchStatus(status)
@@ -364,6 +376,7 @@ class Components extends PanelOperation {
                 origin[1] + yDistance
               ]
               lastPoint = posForWhole
+              _t.addMovingIcon()
               // 通知所有的linking修改相关的数值内容。
               each(_t.outto)(function (val) {
                 each(val)(function (item) {
@@ -403,6 +416,7 @@ class Components extends PanelOperation {
           setChoosen(_t)
         }
         _t.isMoveing = false
+        _t.removeStatusIcon('movingIcon')
       }
     }
     return panel
@@ -508,6 +522,37 @@ class Components extends PanelOperation {
     this.panelManager = null
     this.diagram.clearTree && this.diagram.clearTree()
     globalComponents.delete(this.type, this.name)
+  }
+
+  addStatusIcon (type) {
+    const key = 'statusIcon'
+    this.removeStatusIcon(key)
+    const width = this.panelManager.attrs.width
+    const height = this.panelManager.attrs.height
+    const iconPos = [
+      width,
+      height / 2
+    ]
+    this.subConnect.add(
+      key, new SubIcon(this, 25, 25, iconPos, icons[type])
+    )
+  }
+
+  removeStatusIcon (key) {
+    this.subConnect.remove(key)
+  }
+
+  addMovingIcon () {
+    const key = 'movingIcon'
+    this.removeStatusIcon(key)
+    const width = this.panelManager.attrs.width
+    const iconPos = [
+      width / 2,
+      -10
+    ]
+    this.subConnect.add(
+      key, new MovingIcon(this, 35, 35, iconPos)
+    )
   }
 }
 

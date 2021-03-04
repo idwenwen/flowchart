@@ -2,6 +2,10 @@ import Border from './containerBorder'
 import ContainerContent from './containerContent'
 
 class Container {
+  constructor (container) {
+    this.container = container
+  }
+
   toParameter () {
     return {
       width () {

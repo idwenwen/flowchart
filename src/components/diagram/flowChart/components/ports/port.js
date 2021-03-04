@@ -77,7 +77,6 @@ class Port {
         if (!_t.multiple && _t.hasConnect) {
           _t.container.currentPort = false
         }
-        debugger
         if (this.isPointInFigure(checkPos)) {
           _t.container.currentPort = _t.name
           pushLink(

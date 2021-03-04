@@ -1,13 +1,14 @@
 import Diagram from '../../../diagram'
+import { icons } from '../../loadImage'
 import PanelManager from '../../panelManager'
 import PanelOperation from '../../panelManager/panelOperation'
 
-export default class SubIcon extends PanelOperation {
-  constructor (connectTo, width, height, point, img) {
+export default class MovingIcon extends PanelOperation {
+  constructor (connectTo, width, height, point) {
     super()
     this.connectTo = connectTo
     this.panelManager = null
-    this.img = img
+    this.img = icons.complete
     this.render(width, height, point)
   }
 
@@ -23,10 +24,10 @@ export default class SubIcon extends PanelOperation {
         ]
       },
       width: function () {
-        return parseFloat(this.attrs.width) - 10
+        return parseFloat(this.attrs.width)
       },
       height: function () {
-        return parseFloat(this.attrs.height) - 10
+        return parseFloat(this.attrs.height)
       }
     }
   }
@@ -34,7 +35,15 @@ export default class SubIcon extends PanelOperation {
   toSetting () {
     return {
       data: this.getParameter(),
-      path: 'icon'
+      path: 'icon',
+      event: {
+        toError () {
+          this.image = icons.error
+        },
+        toSuccess () {
+          this.image = icons.complete
+        }
+      }
     }
   }
 
@@ -58,10 +67,5 @@ export default class SubIcon extends PanelOperation {
     this.img = null
     this.panelManager = null
     this.connectTo = null
-  }
-
-  updatePostion (x, y) {
-    this.panelManager.attr.point[0] += x
-    this.panelManager.attr.point[1] += y
   }
 }
