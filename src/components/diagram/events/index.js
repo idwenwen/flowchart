@@ -1,5 +1,5 @@
-import { each, toArray } from '../../../tools/extension/iteration'
-import { Exception } from '../../../tools/exception'
+import { each, toArray } from '../tools/extension/iteration'
+import { Exception } from '../tools/exception'
 import { isObject, remove } from 'lodash'
 import { once } from '../controller/action/action'
 

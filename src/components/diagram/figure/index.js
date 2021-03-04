@@ -1,16 +1,16 @@
-import { defNoEnum } from '../../../tools/extension/define'
-import { each } from '../../../tools/extension/iteration'
-import Tree from '@/tools/extension/tree'
+import { defNoEnum } from '../tools/extension/define'
+import { each } from '../tools/extension/iteration'
+import Tree from '../tools/extension/tree'
 import DrawPath from '../drawPath/index'
 import { isObject, isFunction, isNil } from 'lodash'
 import Events from '../events/index'
 import Animate, { AnimationOperation } from '../animation/index'
-import { acquistion } from '@/tools/extension/proxy'
+import { acquistion } from '../tools/extension/proxy'
 import Progress from '../controller/progress'
 import { calculateCanvas } from '../panel'
-import Watcher from '../../../tools/observer/watcher'
+import Watcher from '../tools/observer/watcher'
 import Parameter from '../parameter'
-import { Exception } from '../../../tools/exception'
+import { Exception } from '../tools/exception'
 
 class Figure extends Tree {
   static Progress = Progress; // 提供设置接口

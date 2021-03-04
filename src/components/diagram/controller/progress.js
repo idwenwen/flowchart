@@ -4,7 +4,7 @@
  * 2. Process: Get process of action timely.
  */
 
-import { Exception } from '../../../tools/exception'
+import { Exception } from '../tools/exception'
 import { divide, isFunction, multiply, add } from 'lodash'
 
 /**

@@ -1,4 +1,4 @@
-import { toRadian } from '../../../tools/extension/angle'
+import { toRadian } from '../tools/extension/angle'
 
 export default {
   name: 'circle',

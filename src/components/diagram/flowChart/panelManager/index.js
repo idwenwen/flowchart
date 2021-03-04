@@ -1,5 +1,5 @@
-import UUID from '@/tools/uuid'
-import { toArray } from '../../../../tools/extension/iteration'
+import UUID from '../../tools/uuid'
+import { toArray } from '../../tools/extension/iteration'
 
 const PanelId = new UUID((index) => `panel_${index}`)
 

@@ -1,8 +1,8 @@
-import { defNoEnum } from '@/tools/extension/define'
-import { each } from '@/tools/extension/iteration'
+import { defNoEnum } from '../tools/extension/define'
+import { each } from '../tools/extension/iteration'
 import { isNil, isObject, isFunction, eq, remove } from 'lodash'
-import Watcher from '@/tools/observer/watcher'
-import Observer from '@/tools/observer'
+import Watcher from '../tools/observer/watcher'
+import Observer from '../tools/observer'
 
 /**
  * 参数对象, 不同的参数对象之间有相关性，通过发布订阅模式进行内容的关联。

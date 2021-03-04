@@ -1,4 +1,4 @@
-import { each } from '@/tools/extension/iteration'
+import { each } from '../../../tools/extension/iteration'
 // import { config } from '../config'
 import Port from './port'
 import { portConfig } from './portConfig'

@@ -1,4 +1,4 @@
-const { setClass } = require('../../../tools/extension/dom')
+const { setClass } = require('../tools/extension/dom')
 const { default: Attributes } = require('./attrs')
 
 class Classes extends Attributes {

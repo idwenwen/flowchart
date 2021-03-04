@@ -2,7 +2,7 @@ import Diagram from '../../diagram'
 import PanelManager from '../panelManager'
 import config from './config'
 import PanelOperation from '../panelManager/panelOperation'
-import UUID from '.@/tools/'
+import UUID from '../../tools/uuid'
 
 const ICONId = new UUID(index => `icon_${index}`)
 

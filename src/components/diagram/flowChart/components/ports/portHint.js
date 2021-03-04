@@ -1,4 +1,4 @@
-import { toRGBA } from '@/tools/extension/color'
+import { toRGBA } from '../../../tools/extension/color'
 import { portType } from '.'
 import { setSuccess } from '../../canvas'
 // import { getCurrentLink, LinkingSuccess } from '../../canvas'

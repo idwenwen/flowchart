@@ -1,8 +1,8 @@
 /**
  * 链接内容
  */
-import UUID from '@/tools/uuid'
-import { each } from '../../../../tools/extension/iteration'
+import UUID from '../../tools/uuid'
+import { each } from '../../tools/extension/iteration'
 import Diagram from '../../diagram'
 import { getCurrentLink, getMainCanvas, linkingFail, setChoosen } from '../canvas'
 import PanelManager from '../panelManager'
@@ -10,7 +10,7 @@ import { compareToPos, getPos } from '../utils'
 import config from './config'
 import Curve from './curve'
 import { globalComponents } from '../components'
-import { Exception } from '../../../../tools/exception'
+import { Exception } from '../../tools/exception'
 
 // type Point = [number, number];
 

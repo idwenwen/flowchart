@@ -1,4 +1,4 @@
-import { each } from '@/tools/extension/iteration'
+import { each } from '../tools/extension/iteration'
 import { calculateCanvas } from '../panel/index'
 import { flatten } from 'lodash'
 

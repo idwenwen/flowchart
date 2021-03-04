@@ -1,7 +1,7 @@
 import { toAction } from './action'
 import { toChain } from './chain'
 import { toParallel } from './parallel'
-import UUID from '../../../../tools/uuid'
+import UUID from '../../tools/uuid'
 
 const randomName = new UUID(index => `Actable_${index}`)
 

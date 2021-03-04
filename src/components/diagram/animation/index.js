@@ -1,5 +1,5 @@
-import { each, toArray } from '../../../tools/extension/iteration'
-import { Exception } from '../../../tools/exception'
+import { each, toArray } from '../tools/extension/iteration'
+import { Exception } from '../tools/exception'
 import { isObject, remove, throttle } from 'lodash'
 import Player from '../controller/action/player'
 import { toActable } from '../controller/action/index'

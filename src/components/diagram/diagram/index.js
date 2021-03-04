@@ -1,5 +1,5 @@
 import Panel from '../panel'
-import { each, toArray } from '../../../tools/extension/iteration'
+import { each, toArray } from '../tools/extension/iteration'
 import renderController, { Drawable } from '../controller/drawing'
 
 const { default: Figure, toFigure } = require('../figure')

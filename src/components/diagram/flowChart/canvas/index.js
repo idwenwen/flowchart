@@ -1,7 +1,7 @@
 import Linking from '../linking'
 import { getPos } from '../utils'
 
-const { create, setStyle, setAttr, addEvents } = require('../../../../tools/extension/dom')
+const { create, setStyle, setAttr, addEvents } = require('../../tools/extension/dom')
 
 /**
  * 全局画布

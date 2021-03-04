@@ -1,6 +1,6 @@
-import { each } from '../../../tools/extension/iteration'
-import { Exception } from '../../../tools/exception'
-import Middleware from '../../../tools/extension/onion'
+import { each } from '../tools/extension/iteration'
+import { Exception } from '../tools/exception'
+import Middleware from '../tools/extension/onion'
 import renderController from './drawing'
 import throttle from 'lodash/throttle'
 

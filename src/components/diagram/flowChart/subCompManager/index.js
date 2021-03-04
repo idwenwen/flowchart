@@ -1,4 +1,4 @@
-import { each } from '../../../../tools/extension/iteration'
+import { each } from '../../tools/extension/iteration'
 
 /**
  * 当前对象主要管理组件之间的关联关系

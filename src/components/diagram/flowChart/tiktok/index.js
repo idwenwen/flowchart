@@ -1,9 +1,9 @@
 import { config } from './config'
-import {each} from '@/tools/extension/iteration'
+import {each} from '../../tools/extension/iteration'
 import PanelManager from '../panelManager'
 import Diagram from '../../diagram'
 import PanelOperation from '../panelManager/panelOperation'
-import UUID from '@/tools/uuid'
+import UUID from '../../tools/uuid'
 
 const tiktokId = new UUID(index => `tiktok_${index}`)
 

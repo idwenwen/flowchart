@@ -1,4 +1,4 @@
-import { each, toArray } from '../../../tools/extension/iteration'
+import { each, toArray } from '../tools/extension/iteration'
 
 /**
  * 绘制过程对象，提供绘制前后的准备，收尾工作与常用的绘制方式。
