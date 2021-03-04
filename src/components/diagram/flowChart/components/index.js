@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Exception } from '../../tools/exception'
 import Content from './content'
 import PanelManager from '../panelManager'
@@ -41,30 +42,30 @@ function checkLinking (comp) {
 class GlobalComponentsManage {
   // comps: Mapping<string, Components>;
   // count: object;
-  constructor () {
+  constructor() {
     this.comps = new Map()
   }
 
-  getDefaultName (type) {
+  getDefaultName(type) {
     const count = this.comps.get(type) ? this.comps.get(type).length : 0
     return `${type}_${count}`
   }
 
-  set (type, comp) {
+  set(type, comp) {
     const origin = this.comps.get(type) || []
     origin.push(comp)
     this.comps.set(type, origin)
   }
 
-  get (type) {
+  get(type) {
     return this.comps.get(type)
   }
 
-  getValue (name, operation) {
+  getValue(name, operation) {
     return operation && operation(toArray(this.get(name)))
   }
 
-  find (operation) {
+  find(operation) {
     let find = false
     each(this.comps)(val => {
       each(toArray(val))(item => {
@@ -80,7 +81,7 @@ class GlobalComponentsManage {
     return find
   }
 
-  delete (type, name) {
+  delete(type, name) {
     let origin = this.comps.get(type)
     remove(origin, (item) => item.name === name)
     this.comps.set(type, origin)
@@ -101,9 +102,10 @@ class Components extends PanelOperation {
 
   // panelManager: Panel;
   // diagram: Diagram
-  constructor (
+  constructor(
+    id,
     type, // 组件类型
-    status, // 当前组件的状态
+    status = ComponentsStatus.unrun, // 当前组件的状态
     disable, // 当前组件是否是不需要运行的。
 
     name, // 当前组件名称
@@ -114,6 +116,7 @@ class Components extends PanelOperation {
   ) {
     super()
     this.name = name || globalComponents.getDefaultName(type)
+    this.id = id || this.name
     this.type = type
 
     this.firstTimeToStatus = status
@@ -142,8 +145,9 @@ class Components extends PanelOperation {
     this.flowPanel = null
   }
 
-  getComponentInfo () {
+  getComponentInfo() {
     const res = {
+      id: this.id,
       name: this.name,
       module: this.type,
       status: this.status,
@@ -183,15 +187,15 @@ class Components extends PanelOperation {
     return res
   }
 
-  setflowPanel (panel) {
+  setflowPanel(panel) {
     this.flowPanel = panel
     if (this.panelManager) {
-      this.flowPanel.append(this.panelManager.domContainer)
+      this.flowPanel.append(this.panelManager.dom)
     }
   }
 
   // 判定当前的展示状态
-  matchStatus (status) {
+  matchStatus(status) {
     status = status.toLowerCase()
     let res
     each(ComponentsStatus)((val, key) => {
@@ -208,7 +212,7 @@ class Components extends PanelOperation {
     return ComponentsStatus[res]
   }
   // 匹配当前的用户内容
-  matchRole (role) {
+  matchRole(role) {
     role = role.toLowerCase()
     let res
     each(Role)((val, key) => {
@@ -225,34 +229,34 @@ class Components extends PanelOperation {
     return Role[res]
   }
 
-  toEvents () {
+  toEvents() {
     const _t = this
     return {
-      isSaving () {
+      isSaving() {
         _t.saved = false
         this.saved = false
       },
-      hasSave () {
+      hasSave() {
         _t.saved = true
         this.saved = true
       },
-      choose () {
+      choose() {
         _t.choosed = true
         this.choosed = true
       },
-      unchoose () {
+      unchoose() {
         _t.choosed = false
         this.choosed = false
       },
-      disable () {
+      disable() {
         _t.disable = true
         this.disable = true
       },
-      able () {
+      able() {
         _t.disable = false
         this.disable = false
       },
-      toStatus (status) {
+      toStatus(status) {
         if (_t.status === ComponentsStatus.running) {
           _t.diagram.animationFinish('loading')
         }
@@ -271,34 +275,34 @@ class Components extends PanelOperation {
           _t.addStatusIcon(type)
         }
       },
-      changeStatus (status) {
+      changeStatus(status) {
         const newStatus = _t.matchStatus(status)
         _t.diagram.animateDispatch('toStatus', newStatus)
       }
     }
   }
 
-  toSetting () {
+  toSetting() {
     const _t = this
     this.borderContent = new Content(this)
     this.borderPorts = new Ports(this.type, this.allSingleType, this.role, this)
     return {
       data: {
-        name () {
+        name() {
           return _t.name
         },
-        saved () {
+        saved() {
           return _t.saved
         },
-        width () {
+        width() {
           return parseFloat(this.attrs.width) - 10 * 2
         },
-        height () {
+        height() {
           let portW = parseFloat(this.attrs.width) * 0.02
           portW = (portW < 12 ? 12 : portW) + 1
           return parseFloat(this.attrs.height) - portW * 2
         },
-        radius () {
+        radius() {
           const times = 0.005
           const minRadius = 2
           const maxRadius = 20
@@ -312,16 +316,16 @@ class Components extends PanelOperation {
                 : radius
           return radius
         },
-        choosed () {
+        choosed() {
           return _t.choosed
         },
-        status () {
+        status() {
           return _t.status
         },
-        disable () {
+        disable() {
           return _t.disable
         },
-        center () {
+        center() {
           return [
             parseFloat(this.attrs.width) / 2,
             parseFloat(this.attrs.height) / 2
@@ -336,7 +340,7 @@ class Components extends PanelOperation {
     }
   }
 
-  toSettingTree (width, height, point) {
+  toSettingTree(width, height, point) {
     const _t = this
     let inPath = null
     let lastPoint = null
@@ -421,13 +425,13 @@ class Components extends PanelOperation {
     return panel
   }
 
-  clickedUpper (eve) {
+  clickedUpper(eve) {
     if (this.diagram.isPointInFigure(getPos(eve))) {
       setChoosen(this)
     }
   }
 
-  linkOut (Linking) {
+  linkOut(Linking) {
     const fromPort = Linking.fromPort
     this.outto[fromPort.type] = this.outto[fromPort.type] || []
     const index = this.outto[fromPort.type].findIndex(item => item.uuid === Linking.uuid)
@@ -436,7 +440,7 @@ class Components extends PanelOperation {
     }
   }
 
-  deleteLinkOut (type, link) {
+  deleteLinkOut(type, link) {
     if (this.outto) {
       const list = this.outto[type]
       remove(list, (props) => props.uuid === link.uuid)
@@ -446,7 +450,7 @@ class Components extends PanelOperation {
     }
   }
 
-  linkIn (Linking) {
+  linkIn(Linking) {
     const endPort = Linking.endPort
     this.into[endPort.type] = this.into[endPort.type] || []
     const index = this.into[endPort.type].findIndex(item => item.uuid === Linking.uuid)
@@ -455,7 +459,7 @@ class Components extends PanelOperation {
     }
   }
 
-  deleteLinkIn (type, link) {
+  deleteLinkIn(type, link) {
     if (this.into) {
       const list = this.into[type]
       remove(list, (props) => props.uuid === link.uuid)
@@ -465,7 +469,7 @@ class Components extends PanelOperation {
     }
   }
 
-  render (width, height, point) {
+  render(width, height, point) {
     const panelSetting = this.toSettingTree(width, height, point)
     const diagramSetting = this.toSetting()
     this.diagram = new Diagram(panelSetting, diagramSetting)
@@ -476,7 +480,7 @@ class Components extends PanelOperation {
     this.diagram.dispatchEvents('changeStatus', this.firstTimeToStatus)
   }
 
-  checkHint (eve, type) {
+  checkHint(eve, type) {
     // 获取关联关系check哪一些是可以进行连接测试的，哪一些不行
     // 通过全局component判断剩余组件是否可以触发portHint事件。
     const notHint = checkLinking(this)
@@ -490,21 +494,21 @@ class Components extends PanelOperation {
     })
   }
 
-  hintFinished () {
+  hintFinished() {
     // 表示当前的提示阶段已经结束。
     // 结束所有的hint内容。
     checkLinking(this)
   }
 
-  choose () {
+  choose() {
     this.diagram.dispatchEvents('choose')
   }
 
-  unchoose () {
+  unchoose() {
     this.diagram.dispatchEvents('unchoose')
   }
 
-  deleteComponent () {
+  deleteComponent() {
     each(this.outto)(function (val, key) {
       while (val.length > 0) {
         val.deleteComponent()
@@ -550,7 +554,7 @@ class Components extends PanelOperation {
       -10
     ]
     this.subConnect.add(
-      key, new MovingIcon(this, 35, 35, iconPos)
+      key, new MovingIcon(this, 30, 30, iconPos)
     )
   }
 }

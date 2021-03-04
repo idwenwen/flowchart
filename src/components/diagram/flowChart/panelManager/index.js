@@ -16,8 +16,8 @@ function getLeftTop (width, height, position) {
 
 // 当前组件主要用于管理Panel内容的相关推算以及diagram之中Panel对象的修改
 class PanelManager {
-  static width = 300;
-  static height = 60;
+  static width = 240;
+  static height = 55;
   static point = [0, 0];
 
   // uuid: string; // 唯一标识符

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import Linking from '../linking'
 import { getPos } from '../utils'
 
@@ -10,11 +11,12 @@ export class CanvasPanel {
   static currentLink; // 当前正在展开的连线
 
   // parentDom: // 当前全局canvas的父元素
-  constructor (parent) {
+  constructor(parent) {
     this.setParent(parent)
+    this.chooseOperationt = null
   }
 
-  styles (dom) {
+  styles(dom) {
     // 获取当前的元素的宽高属性。
     const styles = getComputedStyle(dom)
     return {
@@ -23,7 +25,7 @@ export class CanvasPanel {
     }
   }
 
-  containerCreate () {
+  containerCreate() {
     const parentStyle = this.styles(this.parent)
     const presetstyle = {
       position: 'relative',
@@ -47,15 +49,15 @@ export class CanvasPanel {
     this.canvasEvent()
   }
 
-  append (dom) {
+  append(dom) {
     this.container.append(dom)
   }
 
-  remove (dom) {
+  remove(dom) {
     this.container.removeChild(dom)
   }
 
-  canvasEvent () {
+  canvasEvent() {
     // const _t = this
     addEvents(this.container, {
       'mousemove': (eve) => {
@@ -67,7 +69,7 @@ export class CanvasPanel {
     })
   }
 
-  setParent (parent) {
+  setParent(parent) {
     this.parent = parent
     if (this.parent) {
       this.containerCreate()
@@ -76,7 +78,8 @@ export class CanvasPanel {
     }
   }
 
-  setEventsForParent () {
+  setEventsForParent() {
+    const _t = this
     const events = {
       'click': function () {
         if (!CanvasPanel.choosenChange) {
@@ -86,6 +89,9 @@ export class CanvasPanel {
           CanvasPanel.choosen = null
         }
         CanvasPanel.choosenChange = false
+        if (_t.chooseOperationt) {
+          _t.chooseOperationt(CanvasPanel.choosen)
+        }
       },
       'keydown': function (eve) {
         const keyCode = eve.keyCode
@@ -98,6 +104,10 @@ export class CanvasPanel {
     }
     addEvents(this.container, events)
   }
+
+  afterChoosen (register) {
+    this.chooseOperationt = register
+  }
 }
 
 CanvasPanel.currentLink = null
@@ -109,11 +119,11 @@ CanvasPanel.choosen = null // 当前选中的组件内容。Linking或者compone
 CanvasPanel.choosenChange = false
 
 // CanvasPanel主体
-export function setMainCanvas (canvas) {
+export function setMainCanvas(canvas) {
   CanvasPanel.main = canvas
 }
 
-export function setChoosen (choosen) {
+export function setChoosen(choosen) {
   if (CanvasPanel.choosen) {
     CanvasPanel.choosen.unchoose()
   }
@@ -125,26 +135,26 @@ export function setChoosen (choosen) {
 }
 
 // 获取CanvasPanel内容
-export function getMainCanvas () {
+export function getMainCanvas() {
   return CanvasPanel.main
 }
 
-export function pushLink (startPos, endPos, from, Panel) {
+export function pushLink(startPos, endPos, from, Panel) {
   CanvasPanel.outFrom = from
   CanvasPanel.currentLink = new Linking(startPos, endPos, null, from)
   // 添加当前连线内容
-  Panel.append(CanvasPanel.currentLink.panelManager.domContainer)
+  Panel.append(CanvasPanel.currentLink.panelManager.dom)
 }
 
-export function getCurrentLink () {
+export function getCurrentLink() {
   return CanvasPanel.currentLink
 }
 
-export function modifiedInto (into) {
+export function modifiedInto(into) {
   CanvasPanel.into = into
 }
 
-function init () {
+function init() {
   CanvasPanel.successed = false
   CanvasPanel.currentLink = null
   CanvasPanel.outFrom = null // 连出组件
@@ -152,7 +162,7 @@ function init () {
 }
 
 // 连接成功。
-export function LinkingSuccess () {
+export function LinkingSuccess() {
   if (CanvasPanel.outFrom && CanvasPanel.into && CanvasPanel.currentLink) {
     CanvasPanel.currentLink.from = CanvasPanel.outFrom.container
     CanvasPanel.currentLink.fromPort = CanvasPanel.outFrom
@@ -167,15 +177,15 @@ export function LinkingSuccess () {
   init()
 }
 
-export function linkingFail (panel) {
+export function linkingFail(panel) {
   if (CanvasPanel.currentLink && !CanvasPanel.successed) {
     panel = panel || getMainCanvas().canvas.parentNode
-    panel.removeChild(CanvasPanel.currentLink.panelManager.domContainer)
+    panel.removeChild(CanvasPanel.currentLink.panelManager.dom)
     init()
   }
 }
 
-export function setSuccess () {
+export function setSuccess() {
   CanvasPanel.successed = true
 }
 
