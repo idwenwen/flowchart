@@ -105,17 +105,25 @@ class ContainerContent {
   }
 
   toStatus () {
+    const _t = this
     let originProgress, originColor
     return toChain({
       list: [
         {
-          variation (progress, status) {
+          variation (progress) {
             if (this.status === ComponentsStatus.running) {
               this.origin.animateEnd('loading')
             }
+          },
+          time: 0
+        },
+        {
+          variation (progress, status) {
             if (!originProgress) originProgress = this.progress
             if (!originColor) originColor = this.color
-            this.progress = originProgress + (1 - originProgress) * progress
+            const progressRes = originProgress + (1 - originProgress) * progress
+            this.progress = progress >= 1 ? 1 : progressRes
+            if (progress >= 1) _t.progressing = 1
             const target = contentColor(this.choosed, status, this.disable)
             this.color = Action.get('color')(progress, originColor, target)
           },

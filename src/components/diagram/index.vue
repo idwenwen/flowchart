@@ -1,93 +1,86 @@
 <template>
-  <div class="checked">
-    <div :style="{
-      width: '100%',
-      height: '500px'
-    }" id="flowTest">
-      <div id="chart"/>
-    </div>
-    <button @click="addComponent">addComponent</button>
-    <button @click="showConponentInfo">showConponentInfo</button>
-    <button @click="checkDiagramByConfig">loadInfo</button>
-    <button @click="changeStatus">changsStatus</button>
-  </div>
+  <div
+    id="CanvasComponent"
+    class="canvas-panel"
+  />
 </template>
 
 <script>
-import Chart from './flowChart'
+import Chart from './diagram/flowChart'
+import { compareToPos } from '@/components/flowChart/diagram/flowChart/utils'
 export default {
-  name: 'FlowChart',
-  data () {
-    return {
-      chartFlow: null,
-      index: 0
+  name: 'DagRender',
+
+  props: {
+    role: {
+      type: String,
+      default: 'guest'
     }
   },
+
+  data () {
+    return {
+      chartFlow: null
+    }
+  },
+
   mounted () {
     this.$nextTick(() => {
-      this.chartFlow = new Chart(document.getElementById('flowTest'), 'guest')
+      this.chartFlow = new Chart(document.getElementById('CanvasComponent'), this.role)
+      this.chartFlow.flowPanel.afterChoosen((val) => { this.handleClickCom(val) })
     })
   },
+
   methods: {
-    addComponent () {
-      const setting = [
-        {
-          type: 'reader',
-          status: 'success',
-          disable: false,
-          name: 'reader_0',
-          id: 'comp1'
-        },
-        {
-          type: 'selection',
-          status: 'running',
-          disable: false,
-          name: 'selection_0',
-          id: 'comp2'
-        },
-        {
-          type: 'binning',
-          status: 'unrun',
-          disable: false,
-          name: 'binning_0',
-          id: 'comp3'
-        },
-        {
-          type: 'evaluation',
-          status: 'fail',
-          disable: false,
-          name: 'evaluation_0',
-          id: 'comp4'
-        }
-      ]
-      const item = setting[this.index]
-      if (item) {
-        this.chartFlow.addComp(item.type, item.status, item.disable, item.name)
-        this.index += 1
-      }
+    addComponent (data) {
+      const {
+        id: componentId,
+        type: id,
+        name: label,
+        x: mouseX,
+        y: mouseY,
+        disable,
+        status
+      } = data
+      const _t = this
+      let origin = [data.mouseX, data.mouseY]
+      origin = compareToPos(origin, null, document.getElementById('CanvasComponent'))
+      this.chartFlow.addComp(
+        data.id,
+        status,
+        disable,
+        null,
+        null,
+        null,
+        origin,
+        data.componentId
+      )
+      this.chartFlow.flowPanel.afterChoosen((val) => { _t.handleClickCom(val) })
     },
 
-    showConponentInfo () {
-      this.chartFlow.getCurrentInfo()
+    getDagJson () {
+      return this.chartFlow.getCurrentInfo()
     },
 
-    checkDiagramByConfig () {
-      this.chartFlow.loadInfo()
+    handleClickCom (val) {
+      this.$emit('get', val)
     },
 
-    changeStatus () {
-      this.chartFlow.setStatus({
-        selection_0: 'fail'
-      })
+    setStatus (val) {
+      this.chartFlow.setStatus(val)
+    },
+
+    loadConfig (conf) {
+      this.chartFlow.loadInfo(conf)
     }
   }
 }
 </script>
 
-<style lang="css" scoped>
-  .checked {
-    border: 1px solid #888;
-    display:flex;
-    flex-direction:column;
-  }
+<style scoped lang="scss">
+.canvas-panel {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
 </style>

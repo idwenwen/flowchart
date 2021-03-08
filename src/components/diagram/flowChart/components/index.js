@@ -272,6 +272,8 @@ class Components extends PanelOperation {
         }
         if (type) {
           _t.addStatusIcon(type)
+        } else {
+          _t.removeStatusIcon('statusIcon')
         }
       },
       changeStatus(status) {

@@ -83,7 +83,10 @@ class Player {
 
   // 直接结束当前的帧播放。
   end () {
-    return beat.remove(this.name)
+    if (!this.finished) {
+      this.finished = true
+      return beat.remove(this.name)
+    }
   }
 
   // 调整帧播放速率

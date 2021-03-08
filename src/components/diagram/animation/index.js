@@ -1,6 +1,6 @@
 import { each, toArray } from '../tools/extension/iteration'
 import { Exception } from '../tools/exception'
-import { isObject, remove, throttle } from 'lodash'
+import { isObject, remove } from 'lodash'
 import Player from '../controller/action/player'
 import { toActable } from '../controller/action/index'
 
@@ -23,7 +23,6 @@ class Animate {
     this.animations = new Map() // 全部种类的animation内容。
 
     this.running = new Map() // 当前正在运行的动画。
-    this.finishObser = this._deleteFinished()
 
     setting && this.add(setting)
   }
@@ -89,22 +88,23 @@ class Animate {
     const _t = this
     this._operation(name, function (actions) {
       let willRemove = []
-
+      _t._deleteFinished() // 删除运行列表中已经运行完的动作。
+      if (!_t.running.get(name)) {
       // 将当前内容添加到运行列表
-      if (addToRunning) {
-        _t.running.set(name, actions)
-      }
-      // 并进行遍历执行。
-      each(actions)((player, index) => {
-        opera(player.action)
-        addToRunning && player.once && willRemove.push(index)
-      })
-      if (willRemove.length > 0) {
+        if (addToRunning) {
+          _t.running.set(name, actions)
+        }
+        // 并进行遍历执行。
+        each(actions)((player, index) => {
+          opera(player.action)
+          addToRunning && player.once && willRemove.push(index)
+        })
+        if (willRemove.length > 0) {
         // 删除单次运行动画
-        remove(actions, (_val, index) => willRemove.find(i => i === index))
-        _t.animations.set(name, actions) // 更新当前的映射内容
+          remove(actions, (_val, index) => willRemove.find(i => i === index))
+          _t.animations.set(name, actions) // 更新当前的映射内容
+        }
       }
-      _t.finishObser() // 删除运行列表中已经运行完的动作。
     }, false)
   }
 
@@ -121,17 +121,19 @@ class Animate {
   // 删除已经完成的动作。
   _deleteFinished () {
     const _t = this
-    return throttle(function () {
-      each(_t.running)(function (val, key) {
-        const res = remove(toArray(val), item => item.action.finished)
+    each(_t.running)(function (val, key) {
+      const res = remove(toArray(val), item => !item.action.finished)
+      if (res.length !== 0) {
         _t.running.set(key, res) // 更新删除完成内容之后的数据给running列表。
-      })
-    }, 1000)
+      } else {
+        _t.running.delete(key)
+      }
+    })
   }
 
   // 执行动画
   dispatch (name, ...meta) {
-    // 运行当前动画。但是同时，
+    // 运行当前动画。但是同时
     this._notifyManager(
       name,
       player => {
