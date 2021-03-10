@@ -14,6 +14,7 @@ export class CanvasPanel {
   constructor(parent) {
     this.setParent(parent)
     this.chooseOperationt = null
+    this.events = new Map()
   }
 
   styles(dom) {
@@ -96,8 +97,13 @@ export class CanvasPanel {
       'keydown': function (eve) {
         const keyCode = eve.keyCode
         if (keyCode === 8 || keyCode === 27 || keyCode === 46) {
+          const callback = _t.events.get('delete')
           if (CanvasPanel.choosen) {
-            CanvasPanel.choosen.deleteComponent()
+            callback().then((res) => {
+              if (res) {
+                CanvasPanel.choosen.deleteComponent()
+              }
+            })
           }
         }
       }
@@ -107,6 +113,10 @@ export class CanvasPanel {
 
   afterChoosen (register) {
     this.chooseOperationt = register
+  }
+
+  setEvents(eventType, Func) {
+    this.events.set(eventType, Func)
   }
 }
 
