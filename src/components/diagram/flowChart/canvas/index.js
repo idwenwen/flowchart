@@ -99,7 +99,7 @@ export class CanvasPanel {
         if (keyCode === 8 || keyCode === 27 || keyCode === 46) {
           const callback = _t.events.get('delete')
           if (CanvasPanel.choosen) {
-            callback().then((res) => {
+            callback(CanvasPanel.choosen instanceof Linking).then((res) => {
               if (res) {
                 CanvasPanel.choosen.deleteComponent()
               }
@@ -127,6 +127,7 @@ CanvasPanel.main = null // 主体canvas内容
 CanvasPanel.successed = false
 CanvasPanel.choosen = null // 当前选中的组件内容。Linking或者components
 CanvasPanel.choosenChange = false
+CanvasPanel.chooseToRemove = null
 
 // CanvasPanel主体
 export function setMainCanvas(canvas) {

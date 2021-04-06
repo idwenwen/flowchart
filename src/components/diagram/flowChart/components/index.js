@@ -86,6 +86,15 @@ class GlobalComponentsManage {
     remove(origin, (item) => item.name === name)
     this.comps.set(type, origin)
   }
+
+  clearUp() {
+    each(this.comps)((item) => {
+      each(item)((val) => {
+        val.deleteComponent()
+      })
+    })
+    this.comps = new Map()
+  }
 }
 
 export const globalComps = new Map()
@@ -164,7 +173,9 @@ class Components extends PanelOperation {
         ]
       })(),
       width: this.panelManager.attrs.width,
-      height: this.panelManager.attrs.height
+      height: this.panelManager.attrs.height,
+      dataOutput_count: this.borderPorts['dataOutput'].length,
+      modelOutput_count: this.borderPorts['modelOutput'].length
     }
     const dependency = {}
     if (Object.keys(this.outto).length > 0) {
@@ -278,7 +289,9 @@ class Components extends PanelOperation {
       },
       changeStatus(status) {
         const newStatus = _t.matchStatus(status)
-        _t.diagram.animateDispatch('toStatus', newStatus)
+        if (this.status !== newStatus) {
+          _t.diagram.animateDispatch('toStatus', newStatus)
+        }
       }
     }
   }
@@ -512,12 +525,14 @@ class Components extends PanelOperation {
   deleteComponent() {
     each(this.outto)(function (val, key) {
       while (val.length > 0) {
-        val.deleteComponent()
+        val[0].deleteComponent()
+        val.splice(0, 1)
       }
     })
     each(this.into)(function (val, key) {
       while (val.length > 0) {
-        val.deleteComponent()
+        val[0].deleteComponent()
+        val.splice(0, 1)
       }
     })
     this.outto = {}

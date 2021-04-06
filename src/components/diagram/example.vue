@@ -10,6 +10,7 @@
     <button @click="showConponentInfo">showConponentInfo</button>
     <button @click="checkDiagramByConfig">loadInfo</button>
     <button @click="changeStatus">changsStatus</button>
+    <button @click="rebuild">rebuild</button>
   </div>
 </template>
 
@@ -89,6 +90,10 @@ export default {
         binning_0: 'running',
         evaluation_0: 'unrun'
       })
+    },
+
+    rebuild (event, config) {
+      this.chartFlow.rebuild(config)
     }
   }
 }

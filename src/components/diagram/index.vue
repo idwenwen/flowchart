@@ -72,6 +72,14 @@ export default {
 
     loadConfig (conf) {
       this.chartFlow.loadInfo(conf)
+    },
+
+    beforeDelete (events) {
+      this.chartFlow.setDelete(events)
+    },
+
+    rebuild (config) {
+      this.chartFlow.rebuild(config)
     }
   }
 }

@@ -79,6 +79,11 @@ class Chart {
     })
   }
 
+  rebuild (config) {
+    globalComponents.clearUp()
+    this.loadInfo(config)
+  }
+
   setStatus (val) {
     each(val)((val, key) => {
       const res = globalComps.get(key)
@@ -86,6 +91,10 @@ class Chart {
         res.changeStatus(val)
       }
     })
+  }
+
+  setDelete (events) {
+    this.flowPanel.setEvents('delete', events)
   }
 }
 
