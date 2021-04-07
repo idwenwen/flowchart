@@ -45,7 +45,7 @@ export default class Port {
    * @param {[Number, Number]} position 位置对象
    */
   linking (eve, position) {
-    if ()
+    if (this.panel[])
   }
 
   getParameter () {

@@ -10,7 +10,7 @@ import Progress from '../controller/progress'
 import { calculateCanvas } from '../panel'
 import Watcher from '../tools/observer/watcher'
 import Parameter from '../parameter'
-import { Exception } from '../tools/exception'
+import { record } from '../../tools/exception'
 
 class Figure extends Tree {
   static Progress = Progress; // 提供设置接口
@@ -85,23 +85,21 @@ class Figure extends Tree {
   // 当参数变化的时候figure将会自动的通知当前的展示的更新（重绘工作）。
   dataUpdate () {
     const _t = this
+    const watcher = new Watcher(
+      null, // 监听当前数据之中的cache存储模块。
+      function () {
+        // 合并当前的属性给与下文之中的内容。
+        return Object.assign({}, _t)
+      },
+      function (_result) {
+        // TODO:需要将当前figure变动通知到drawing内容。
+        _t.root().render()
+      }
+    )
+    // 主动关联当前的paramer的cache内容。
     if (this.data) {
       this.data.subscribe(
-        new Watcher(
-          _t.data.cache, // 监听当前数据之中的cache存储模块。
-          function () {
-            // 拷贝当前参数数值。
-            const keys = Object.keys(this)
-            if (this[keys[0]] !== undefined) {
-              void 0
-            }
-            return Object.assign({}, _t)
-          },
-          (_result) => {
-            // TODO:需要将当前figure变动通知到drawing内容。
-            _t.root().render()
-          }
-        )
+        watcher
       )
     }
   }
@@ -161,7 +159,6 @@ class Figure extends Tree {
     }
     this.root().render()
   }
-
   getDisplay () {
     return this._display
   }
@@ -181,6 +178,7 @@ class Figure extends Tree {
   figureProxy () {
     const CustomerHandler = {
       set (target, key, value) {
+        // 默认获取当前对象cache之中的属性。
         target.data.cache[key] = value
         return true
       },
@@ -197,14 +195,19 @@ class Figure extends Tree {
     return acquistion(this, CustomerHandler)
   }
 
+  /**
+   * 判定当前的point是否在path之中。
+   * @param {[number, number]} point 当前点击位置的点内容
+   * @param {Object} ctx 2D画板对象
+   */
   isPointInFigure (point, ctx = calculateCanvas.dom.getContext('2d')) {
     // ctx将直接使用计算绘板代替
     let result = false
-    // const _t = this
 
     // 通知内容以进行绘制。
     this.notify(function () {
       const __t = this
+      // 如果当前节点有drawPath函数并且display是true的内容则
       if (this.drawPath && this.getDisplay()) {
         this.drawPath.drawing(
           ctx,
@@ -212,9 +215,12 @@ class Figure extends Tree {
           {
           // 在afterDraw生命周期之中判定当前点内容是否在路径之中
             afterDraw: function (ctxx) {
+              // 绘制之后判别内容。
               if (!__t.drawPath || __t.drawPath._origin !== 'icon') {
+                // 如果当前内容不是ICON的话。
                 result = ctxx.isPointInPath(point[0], point[1])
               } else {
+                // 如果当前的内容是ICON的话。则通过borderBox的方式去比较。
                 const data = __t.data.cache
                 const center = data.center
                 const width = data.width
@@ -228,12 +234,8 @@ class Figure extends Tree {
           }
         )
         if (result) {
-          throw new Exception(
-            'BreakingException',
-            'Has checked to be sure for result',
-            Exception.level.Info,
-            false
-          )
+          record('BreakingException',
+            'Has checked to be sure for result')
         }
       }
     }, false)
@@ -261,17 +263,18 @@ class Figure extends Tree {
   }
 
   /** **********************动画相关操作******************** */
+  // 为当前树节点内容添加相关的动画操作函数。
   animateOperation () {
     const _t = this
     each(Object.assign({}, AnimationOperation, {
       Add: 'add',
       Remove: 'remove'
-    }))((_val, key) => {
-      _t['animate' + key] = _t.animating(key)
+    }))((val, key) => {
+      _t[val + 'Animate'] = _t.animating(key)
     })
   }
 
-  // 动画操作
+  // 动画内容遍历与通知函数
   animating (
     operation
   ) {

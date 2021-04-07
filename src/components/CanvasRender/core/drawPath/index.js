@@ -3,7 +3,7 @@ import { isObject, isString, isFunction } from 'lodash'
 import Brushing from '../brush/index'
 import { defNoEnum } from '../tools/extension/define'
 import { pathList } from './path'
-import { record } from '../../utils/exception'
+import { record } from '../../tools/exception'
 
 /**
  * 绘制路径实例，存储用户对于绘制路径的设置。

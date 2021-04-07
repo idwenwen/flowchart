@@ -2,7 +2,7 @@ import { each } from '../tools/extension/iteration'
 import Middleware from '../tools/extension/onion'
 import renderController from './drawing'
 import throttle from 'lodash/throttle'
-import { record } from '../../utils/exception'
+import { record } from '../../tools/exception'
 
 /**
  * 公共心跳关系，主要用于处理动作机制以及，相对固定间隔时间之内的时间

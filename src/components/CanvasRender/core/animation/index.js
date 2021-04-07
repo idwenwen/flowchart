@@ -2,7 +2,7 @@ import { each, toArray } from '../../tools/extension/iteration'
 import { isObject, remove } from 'lodash'
 import Player from '../controller/action/player'
 import { toActable } from '../controller/action/index'
-import { record } from '../../utils/exception'
+import { record } from '../../tools/exception'
 
 export const AnimationOperation = {
   Dispatch: 'dispatch',

@@ -119,7 +119,7 @@ class Watcher {
    */
   run () {
     try {
-      if (this.active) {
+      if (this.active && this._context) {
         // 当前内容订阅者是否运行
         if (this.dirty) {
           // 是否已经更新

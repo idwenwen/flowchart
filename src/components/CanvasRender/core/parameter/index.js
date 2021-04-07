@@ -24,12 +24,12 @@ class Parameter {
   }
 
   // 获取缓存的方法
-  getCacheOperation () {
+  getCacheOperation (implying) {
     return function getCache () {
       if (!this) {
         return {}
       } else {
-        const res = each(this)((val, key) => {
+        const res = each(implying)((val, key) => {
           if (isFunction(val)) {
             return val.call(this)
           } else if (isObject(val) && key !== 'image') {
@@ -38,7 +38,35 @@ class Parameter {
             return val
           }
         })
-        return res
+        return Object.assign({}, this, res)
+      }
+    }
+  }
+
+  setMemories () {
+    // 判定当前cache属性，初始化当前的属性
+    if (isNil(this.cache)) this.cache = {}
+
+    // 返回cache的内容
+    return function setCache (result) {
+      // 表示当前cache内容已经被订阅了。此时修改cache不可以直接赋值，而是是需要进行内容合并入原对象内容
+      if (this._hasProxy) {
+        // 合并result进入原有的cache之中。
+        const keys = Object.keys(this.cache)
+        each(result)((val, key) => {
+          if (!eq(this.cache[key], val)) this.cache[key] = val // 两值不相同的情况下
+          remove(keys, (k) => k === key)
+        })
+
+        // 合并结束之后删除掉多余的内容，如果存在的话。
+        if (keys.length > 0) {
+        // 删除多余的展示内容。
+          each(keys)((key) => {
+            delete this.cache[key]
+          })
+        }
+      } else {
+        this.cache = result
       }
     }
   }
@@ -50,46 +78,12 @@ class Parameter {
    */
   initWatcher (implying, context) {
     const _t = this
-    return new Watcher(context || implying,
+    return new Watcher(context,
       // Getter方法，对象内容转换，并将context之中不同值赋予当前内容。
-      function getCache (imm = implying) {
-        const __t = this
-        let res = null
-        if (__t !== imm) {
-          res = each(imm)((val, key) => {
-            if (isFunction(val)) {
-              return val.call(__t)
-            } else if (isObject(val) && key !== 'image') {
-              return getCache(val)
-            } else {
-              return val
-            }
-          })
-        }
-        return Object.assign({}, this, res)
-      },
-
+      _t.getCacheOperation(implying),
       // 回调函数。watcher之中的cache汇总至此、
-      function (result) {
-      // 初始化结果对象
-        if (isNil(_t.cache)) _t.cache = {}
-
-        if (_t._hasProxy) {
-          const keys = Object.keys(_t.cache)
-          each(result)((val, key) => {
-            if (!eq(_t.cache[key], val)) _t.cache[key] = val // 两值不相同的情况下
-            remove(keys, (k) => k === key)
-          })
-          if (keys.length > 0) {
-          // 删除多余的展示内容。
-            each(keys)((key) => {
-              delete _t.cache[key]
-            })
-          }
-        } else {
-          _t.cache = result
-        }
-      })
+      _t.setMemories()
+    )
   }
 
   /**

@@ -66,6 +66,7 @@ class Render {
       // 依据drawList判定绘制内容。
       if (_t.drawableList.length > 0) {
         const finish = []
+        // 遍历当前的绘制列表
         each(_t.drawableList)(function (val, index) {
           val.render()
           finish.push(index)

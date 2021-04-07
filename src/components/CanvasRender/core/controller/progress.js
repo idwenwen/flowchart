@@ -1,5 +1,5 @@
 import { divide, isFunction, multiply, add } from 'lodash'
-import { record } from '../../utils/exception'
+import { record } from '../../tools/exception'
 
 class Progress {
   static RATE = new Map();

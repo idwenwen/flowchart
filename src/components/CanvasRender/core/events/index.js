@@ -1,7 +1,7 @@
-import { each, toArray } from '../../utils/iteration'
+import { each, toArray } from '../../tools/iteration'
 import { isObject, remove } from 'lodash'
 import { once } from '../controller/action/action'
-import { record } from '../../utils/exception'
+import { record } from '../../tools/exception'
 
 class Events {
   // eventsList: Mapping<string, EventNode[]>; 事件管理
