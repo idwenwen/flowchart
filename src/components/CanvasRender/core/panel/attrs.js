@@ -1,8 +1,8 @@
 import { cloneDeep, eq, isObject } from 'lodash'
-import { setAttr } from '../tools/extension/dom'
-import { each, toArray } from '../tools/extension/iteration'
-import { acquistion } from '../tools/extension/proxy'
-import Observer from '../tools/observer'
+import { setAttr } from '../../tools/dom'
+import { each, toArray } from '../../tools/iteration'
+import { acquistion } from '../../tools/proxy'
+import Observer from '../../tools/observer'
 
 export default class Attributes {
   // attrs: object 属性存储对象

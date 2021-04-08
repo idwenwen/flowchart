@@ -1,4 +1,4 @@
-import { each } from '../tools/extension/iteration'
+import { each } from '../../../tools/iteration'
 
 export default {
   name: 'curve',

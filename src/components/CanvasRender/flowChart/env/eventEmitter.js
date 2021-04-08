@@ -1,6 +1,6 @@
 import { isFunction } from 'lodash'
-import record, { Exception } from '../../tools/exception'
-import { toArray } from '../../tools/extension/iteration'
+import {record} from '../../tools/exception'
+import { toArray } from '../../tools/iteration'
 
 export class EventEmitter {
   constructor (context) {
@@ -13,14 +13,12 @@ export class EventEmitter {
   }
 
   addEvent (type, eve) {
-    const list = this.events.get(type)
+    const list = this.events.get(type) || []
     if (isFunction) list.push(eve)
     else if (Array.isArray(eve)) list.push(...eve)
     else {
-      record(new Exception('TypedError',
-        'Need type as function or Array<Function>',
-        Exception.level.Warn,
-        false))
+      record('TypedError',
+        'Need type as function or Array<Function>')
     }
     this.events.set(type, list)
   }
@@ -44,7 +42,7 @@ export class EventEmitter {
 
   dispatch (type, ...rest) {
     const list = this.events.get(type)
-    if (list.length > 0) {
+    if (Array.isArray(list) && list.length > 0) {
       list.forEach(val => {
         if (this.context) {
           val.call(this.context, ...rest)

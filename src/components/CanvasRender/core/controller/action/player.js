@@ -1,5 +1,5 @@
-import UUID from '../../tools/uuid'
-import { defNoEnum } from '../../tools/extension/define'
+import UUID from '../../../tools/uuid'
+import { defNoEnum } from '../../../tools/define'
 import beat from '../heartbeat'
 
 // 播放对象唯一ID

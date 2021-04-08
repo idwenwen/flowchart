@@ -1,4 +1,4 @@
-import { EventEmitter } from './eventEmmiter'
+import { EventEmitter } from './eventEmitter'
 
 export default class Choosen {
   constructor () {

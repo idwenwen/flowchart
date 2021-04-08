@@ -1,5 +1,5 @@
-import { each } from '../tools/extension/iteration'
-import Middleware from '../tools/extension/onion'
+import { each } from '../../tools/iteration'
+import Middleware from '../../tools/onion'
 import renderController from './drawing'
 import throttle from 'lodash/throttle'
 import { record } from '../../tools/exception'
@@ -108,7 +108,6 @@ class HeartBeat {
         _t.middleWare.compose()(
           {},
           (context, next) => {
-            // debugger
             // 如果还有动画再运行，或者还有内容需要渲染的化，则将自动进入下一次渲染循环
             const hasNext =
             animateStep.call(_t, timestepCheck) || renderController.isRendering()

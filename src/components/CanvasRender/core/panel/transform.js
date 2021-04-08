@@ -1,5 +1,5 @@
 import { cloneDeep, remove } from 'lodash'
-import { each } from '../tools/extension/iteration'
+import { each } from '../../tools/iteration'
 
 const { default: Attributes } = require('./attrs')
 

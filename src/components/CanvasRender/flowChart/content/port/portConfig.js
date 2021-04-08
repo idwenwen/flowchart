@@ -196,6 +196,6 @@ export function getPortConfig (type, allSinglePort = false) {
   let modelOutput = getModelOutput(type, allSinglePort)
   return {
     input: [...dataInput, ...modelInput],
-    outpu: [...dataOutput, ...modelOutput]
+    output: [...dataOutput, ...modelOutput]
   }
 }

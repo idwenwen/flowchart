@@ -1,5 +1,5 @@
-import { each } from '../tools/extension/iteration'
-import { calculateCanvas } from '../panel/index'
+import { each } from '../../../tools/iteration'
+import { calculateCanvas } from '../../panel/index'
 import { flatten } from 'lodash'
 
 function toSameLen (str, len) {

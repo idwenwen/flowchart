@@ -1,5 +1,5 @@
 import { isArray, remove } from 'lodash'
-import UUID from '../../uuid/index'
+import UUID from '../uuid'
 import { toArray, each } from '../iteration'
 import { defNoEnum } from '../define'
 
@@ -62,9 +62,10 @@ class Tree {
 
   // 设置新的多个孩子节点
   setChildren (newChildren) {
+    const _t = this
     if (isArray(newChildren)) {
-      each(newChildren)((val) => {
-        val.setChild(this)
+      each(newChildren)(function (val) {
+        _t.setChild(val)
       })
     } else {
       this.setChild(newChildren)

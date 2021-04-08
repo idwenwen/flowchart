@@ -1,4 +1,4 @@
-import { Exception } from '../../../diagram/tools/exception'
+import Exception from './exception'
 import logger from '../log'
 
 export function record (alias, msg, cache = false, level = 'info') {

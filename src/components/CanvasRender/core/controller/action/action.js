@@ -1,8 +1,8 @@
 import Player from './player'
 import Progress from '../progress'
-import { each } from '../../tools/extension/iteration'
-import { toRGBA } from '../../tools/extension/color'
-import UUID from '../../tools/uuid'
+import { each } from '../../../tools/iteration'
+import { toRGBA } from '../../../tools/color'
+import UUID from '../../../tools/uuid'
 
 /**
  * 当前内容表示的是单个的动作变化内容。

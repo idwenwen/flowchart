@@ -1,8 +1,8 @@
 /**
  * 逻辑过滤器
  */
-import UUID from '../../uuid/index'
-import { Exception } from '../../exception'
+import UUID from '../uuid/index'
+import { record } from '../exception'
 
 const MiddlewareId = new UUID()
 
@@ -43,12 +43,9 @@ export default class Middleware {
       function dispatch (i) {
         if (i <= index) {
           Promise.reject(
-            new Exception(
+            record(
               'RepeatExecution',
-              'Middleware has been ran before',
-              Exception.level.Error,
-              false
-            )
+              'Middleware has been ran before')
           )
         } else {
           index++

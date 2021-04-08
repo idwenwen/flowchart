@@ -1,7 +1,7 @@
-import { each, toArray } from '../tools/extension/iteration'
+import { each, toArray } from '../../tools/iteration'
 import { isObject, isString, isFunction } from 'lodash'
 import Brushing from '../brush/index'
-import { defNoEnum } from '../tools/extension/define'
+import { defNoEnum } from '../../tools/define'
 import { pathList } from './path'
 import { record } from '../../tools/exception'
 

@@ -1,6 +1,6 @@
-import { defNoEnum } from '../extension/define'
-import { each } from '../extension/iteration'
-import { Exception } from '../exception'
+import { defNoEnum } from '../define'
+import { each } from '../iteration'
+import { record } from '../exception'
 import UUID from '../uuid'
 import { popTarget, pushTarget } from './dep'
 import { eq, isObject, isFunction, isArray } from 'lodash'
@@ -119,6 +119,7 @@ class Watcher {
    */
   run () {
     try {
+      const _t = this
       if (this.active && this._context) {
         // 当前内容订阅者是否运行
         if (this.dirty) {
@@ -127,19 +128,17 @@ class Watcher {
           this.cache = this.get(this._getter)
           // 更新之后调用回调函数
           if (this._callback.length > 0) {
-            each(this._callback)((cb) => {
-              cb.call(this._context, this.cache)
+            each(this._callback)(function (cb) {
+              cb.call(_t._context, _t.cache)
             })
           } else if (isFunction(this._callback)) {
             this._callback.call(this._context, this.cache)
           }
         }
       } else {
-        throw new Exception(
+        record(
           'UnactiveWatcher',
-          'Current watcher is not working',
-          Exception.level.Warn,
-          false
+          'Current watcher is not working'
         )
       }
     } finally {

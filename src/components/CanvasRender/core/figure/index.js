@@ -1,14 +1,14 @@
-import { defNoEnum } from '../tools/extension/define'
-import { each } from '../tools/extension/iteration'
-import Tree from '../tools/extension/tree'
+import { defNoEnum } from '../../tools/define'
+import { each } from '../../tools/iteration'
+import Tree from '../../tools/tree'
 import DrawPath from '../drawPath/index'
 import { isObject, isFunction, isNil } from 'lodash'
 import Events from '../events/index'
 import Animate, { AnimationOperation } from '../animation/index'
-import { acquistion } from '../tools/extension/proxy'
+import { acquistion } from '../../tools/proxy'
 import Progress from '../controller/progress'
 import { calculateCanvas } from '../panel'
-import Watcher from '../tools/observer/watcher'
+import Watcher from '../../tools/observer/watcher'
 import Parameter from '../parameter'
 import { record } from '../../tools/exception'
 
@@ -89,9 +89,11 @@ class Figure extends Tree {
       null, // 监听当前数据之中的cache存储模块。
       function () {
         // 合并当前的属性给与下文之中的内容。
+        if (this['_connectTo']) void 0
         return Object.assign({}, _t)
       },
       function (_result) {
+        debugger
         // TODO:需要将当前figure变动通知到drawing内容。
         _t.root().render()
       }
@@ -332,7 +334,13 @@ export function toFigure (setting, parent) {
   if (parent) figure.setParent(parent)
   if (setting.children && setting.children.length > 0) {
     each(setting.children)((set) => {
-      if (!isNil(setting.display) && !setting.display) set.display = false
+      if (!isNil(setting.display) && !setting.display) {
+        if (set instanceof Figure) {
+          set.setDisplay(false)
+        } else {
+          set.display = false
+        }
+      }
       toFigure(set, figure)
     })
   }

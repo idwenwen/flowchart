@@ -14,10 +14,13 @@ class ICONPanel extends PanelOperation {
   constructor (pos, width, height, type, disable) {
     super()
     this.uuid = ICONId.get()
-    const panelSetting = new PanelManager().toSetting(width, height, pos)
+    const panel = new PanelManager({
+      width,
+      height,
+      point: pos
+    }).panel
     const diagramSetting = this.toSetting(type, disable)
-    this.diagram = new Diagram(panelSetting, diagramSetting)
-    this.PanelManager = this.diagram.panel
+    this.diagram = new Diagram(panel, diagramSetting)
   }
 
   toParameter (type) {

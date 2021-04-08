@@ -1,6 +1,6 @@
 import { toAction } from './action'
 import { eq, remove } from 'lodash'
-import { each, toArray } from '../../tools/extension/iteration'
+import { each, toArray } from '../../../tools/iteration'
 import Player from './player'
 
 class Parallel extends Player {

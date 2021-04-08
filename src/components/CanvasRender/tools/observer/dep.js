@@ -1,5 +1,5 @@
 import UUID from '../uuid/index'
-import { each } from '../extension/iteration'
+import { each } from '../iteration'
 
 // 唯一ID
 const DepId = new UUID()

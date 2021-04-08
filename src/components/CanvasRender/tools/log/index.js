@@ -1,5 +1,4 @@
 import EXHIBITION from '../console'
-import { strFormat } from '../string'
 
 // 日志等级信息控制
 class LoggerLevel {
@@ -55,7 +54,7 @@ class Logger {
     }
     const exLevel = LOG_LEVEL.getLevel(level)
     const list = this.logger.get(exLevel) || []
-    list.push(strFormat(`${exLevel}-${content}-<date>`))
+    list.push(`${exLevel}-${content}-<date>`)
     this.logger.set(exLevel, list)
   }
   clearLogger (level) {

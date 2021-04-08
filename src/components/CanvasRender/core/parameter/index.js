@@ -1,8 +1,8 @@
-import { defNoEnum } from '../tools/extension/define'
-import { each } from '../tools/extension/iteration'
+import { defNoEnum } from '../../tools/define'
+import { each } from '../../tools/iteration'
 import { isNil, isObject, isFunction, eq, remove } from 'lodash'
-import Watcher from '../tools/observer/watcher'
-import Observer from '../tools/observer'
+import Watcher from '../../tools/observer/watcher'
+import Observer from '../../tools/observer'
 
 /**
  * 参数对象, 不同的参数对象之间有相关性，通过发布订阅模式进行内容的关联。
@@ -16,7 +16,7 @@ class Parameter {
 
   constructor (origin, context) {
     const _t = this
-    this.cache = null // 开始的时候还没有结果。
+    this.cache = {} // 开始的时候还没有结果。
     this._hasProxy = false
     defNoEnum(this, {
       _imply: _t.initWatcher(origin, context)
@@ -48,13 +48,14 @@ class Parameter {
     if (isNil(this.cache)) this.cache = {}
 
     // 返回cache的内容
+    const _t = this
     return function setCache (result) {
       // 表示当前cache内容已经被订阅了。此时修改cache不可以直接赋值，而是是需要进行内容合并入原对象内容
-      if (this._hasProxy) {
+      if (_t._hasProxy) {
         // 合并result进入原有的cache之中。
-        const keys = Object.keys(this.cache)
+        const keys = Object.keys(_t.cache)
         each(result)((val, key) => {
-          if (!eq(this.cache[key], val)) this.cache[key] = val // 两值不相同的情况下
+          if (!eq(_t.cache[key], val)) _t.cache[key] = val // 两值不相同的情况下
           remove(keys, (k) => k === key)
         })
 
@@ -62,11 +63,11 @@ class Parameter {
         if (keys.length > 0) {
         // 删除多余的展示内容。
           each(keys)((key) => {
-            delete this.cache[key]
+            delete _t.cache[key]
           })
         }
       } else {
-        this.cache = result
+        _t.cache = result
       }
     }
   }

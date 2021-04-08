@@ -1,4 +1,4 @@
-import { each } from '../../tools/extension/iteration'
+import { each } from '../../tools/iteration'
 
 /**
  * 当前对象主要管理组件之间的关联关系
@@ -40,6 +40,19 @@ class SubCompManager {
     each(this.connect, (val) => {
       val.updatePosition(x, y)
     })
+  }
+
+  clear (type) {
+    const comp = this.connect.get(type)
+    if (this.connect.get(type) && comp) {
+      comp.clearUp()
+      this.connect.delete(type)
+    }
+  }
+  clearUp () {
+    for (const val of this.connect) {
+      this.clear(val[0])
+    }
   }
 }
 

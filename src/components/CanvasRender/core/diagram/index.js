@@ -1,5 +1,5 @@
 import Panel from '../panel'
-import { each, toArray } from '../tools/extension/iteration'
+import { each, toArray } from '../../tools/iteration'
 import renderController, { Drawable } from '../controller/drawing'
 
 const { default: Figure, toFigure } = require('../figure')
@@ -24,6 +24,7 @@ class Diagram extends Figure {
 
   // 渲染当前的图形树
   render () {
+    debugger
     if (this._panel && this._panel.dom) {
       renderController.add(new Drawable(this._panel.dom, this.drawing(), this._uuid, this))
     }

@@ -1,4 +1,4 @@
-import { each, toArray } from '../../tools/extension/iteration'
+import { each, toArray } from '../../tools/iteration'
 import { isObject, remove } from 'lodash'
 import Player from '../controller/action/player'
 import { toActable } from '../controller/action/index'

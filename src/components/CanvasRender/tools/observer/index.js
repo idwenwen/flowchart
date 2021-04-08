@@ -1,8 +1,8 @@
 import Dep from './dep'
 import { isObject, isArray, eq } from 'lodash'
-import { defNoEnum } from '../extension/define'
-import {Exception} from '../exception'
-import {each} from '../extension/iteration'
+import { defNoEnum } from '../define'
+import {record} from '../exception'
+import {each} from '../iteration'
 
 /**
  * 当前订阅者的代理操作。
@@ -42,11 +42,9 @@ const DefaultOperation = (observer) => {
           result = delete target[key]
         } else {
           // 其他情况
-          throw new Exception(
+          record(
             'CannotDelete',
-            `Cannot delete ${key.toString()} from ${target}`,
-            Exception.level.Warn,
-            false
+            `Cannot delete ${key.toString()} from ${target}`
           )
         }
 

@@ -1,6 +1,7 @@
 import { ComponentsStatus } from '..'
 import { toChain } from '../../../core/controller/action'
 import Action from '../../../core/controller/action/action'
+import { toFigure } from '../../../core/figure'
 import Tree from '../../../tools/tree'
 import { CHOOSE, COULDNOTRUN, DISABLE_PROGRESS, ERROR, PROGRESS, SUCCESS, UNRUN } from './config'
 
@@ -34,6 +35,7 @@ export default class ContentBody extends Tree {
     super()
     this.figure = null
     this.progressing = 1
+    this.toRender()
   }
 
   // 加载读条动画。
@@ -141,14 +143,14 @@ export default class ContentBody extends Tree {
   }
 
   toRender () {
-    this.figure = {
+    this.figure = toFigure({
       data: this.getParameter(),
       path: 'rect',
       animate: {
         loading: this.loading(),
         changeStatus: this.changeStatus()
       }
-    }
+    })
     return this.figure
   }
 }

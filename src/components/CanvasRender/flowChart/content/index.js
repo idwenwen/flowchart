@@ -62,21 +62,27 @@ const defaultName = new GlobalNameCheck()
 
 export default class Component extends Tree {
   constructor (
-    id,
-    type, // 组件类型
-    status = ComponentsStatus.unrun, // 当前组件的状态
-    disable, // 当前组件是否是不需要运行的。
+    {
+      id,
+      type, // 组件类型
+      status = ComponentsStatus.unrun, // 当前组件的状态
+      disable, // 当前组件是否是不需要运行的。
 
-    name, // 当前组件名称
-    role, // 当前组件针对的角色
-    choose = false, // 当前组件是否被选择
+      name, // 当前组件名称
+      role, // 当前组件针对的角色
+      choose = false, // 当前组件是否被选择
 
-    single = false
+      single = false,
+
+      width,
+      height,
+      point
+    }
   ) {
     super()
     this.id = id
     this.type = type
-    this.status = matchStatus(status)
+    this.status = matchStatus('unrun')
     this.disable = disable
 
     this.name = name || defaultName.getName(this.type)
@@ -92,8 +98,13 @@ export default class Component extends Tree {
     this.isChanging = false
     this.lastStatus = ''
 
+    // 记录当前连线数值内容。
+    this.linkOut = new Set()
+    this.linkInto = new Set()
+
     this.figure = null
     this.panel = null
+    this.toRender(width, height, point, status)
   }
 
   // diagram 组件的配置信息与组件内容。
@@ -226,10 +237,11 @@ export default class Component extends Tree {
         // 获取当前port的对象
         const mid = _t.checkPositionForPort(getPos(eve))
         if (mid) {
-          GLOBAL.linking.from(_t)
-          GLOBAL.linking.fromPos(getPos(eve))
+          mid.linkFrom(eve) // 创建连接,结果表示当前连接是否成功
+        } else {
+          // 如果当前没有连接的话，设置当前内容为moving
+          GLOBAL.moving.setMove(_t)
         }
-        GLOBAL.moving.setMove(_t)
       },
       'click': function (eve) {
         // 当前内容被选中
@@ -241,7 +253,7 @@ export default class Component extends Tree {
     }
   }
 
-  toRender (width, height, point) {
+  toRender (width, height, point, status) {
     const childList = [
       new Content(),
       new ContentPorts(this.type, this.single, this.role)
@@ -263,10 +275,53 @@ export default class Component extends Tree {
         return res
       })()
     })
+    GLOBAL.globalPanel.append(this.panel) // 全局环境下添加当前的展示内容。
+    this.figure.dispatchEvents('startChangeStatus', status)
     return this.figure
   }
 
   checkPositionForPort (position) {
-    return this.children[1].inPort(position)
+    return this.getChildren()[1].inPort(position)
+  }
+
+  addSub (name, subComp) {
+    this.subs.add(name, subComp)
+    this.panel.append(subComp.panel)
+  }
+  removeSub (name) {
+    const sub = this.subs.remove(name)
+    this.panel.remove(sub.panel)
+  }
+
+  addLinkOut (linking) {
+    this.linkOut.add(linking)
+  }
+  addLinkInto (linking) {
+    this.linkInto.add(linking)
+  }
+
+  // 当前panel移位
+  translate ({x: xDistance, y: yDistance}) {
+    const origin = this.panel.attrs.point
+    this.panel.attrs.point = [
+      origin[0] + xDistance,
+      origin[1] + yDistance
+    ]
+    // 相关连线移动
+    for (const val of this.linkInto) {
+      val.translateEnd(xDistance, yDistance)
+    }
+    for (const val of this.linkOut) {
+      val.translateStart(xDistance, yDistance)
+    }
+  }
+
+  clearUp () {
+    // 清除当前的展示内容
+    ([...(Array.from(this.linkInto)), ...(Array.from(this.linkOut))]).forEach(val => {
+      val.clearUp()
+    })
+    this.subs.clearUp()
+    GLOBAL.globalPanel.remove(this.panel)
   }
 }

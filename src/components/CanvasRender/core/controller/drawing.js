@@ -1,6 +1,6 @@
 import { throttle, remove } from 'lodash'
-import UUID from '../tools/uuid'
-import { each, toArray } from '../tools/extension/iteration'
+import UUID from '../../tools/uuid'
+import { each, toArray } from '../../tools/iteration'
 import beat from './heartbeat'
 
 const DrawableId = new UUID(index => `Drawable_${index}`)

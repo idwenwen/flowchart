@@ -18,7 +18,7 @@ export default class Linking {
     this.inner = inner
   }
   // 关联对象
-  linking (linking) {
+  link (linking) {
     this.linking = linking
   }
 

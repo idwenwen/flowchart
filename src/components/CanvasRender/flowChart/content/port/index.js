@@ -87,7 +87,7 @@ export default class ContentPorts extends Tree {
   }
 
   inPort (position) {
-    for (const val of this.children) {
+    for (const val of this.getChildren()) {
       const mid = val.inPort(position)
       if (mid) return mid
     }

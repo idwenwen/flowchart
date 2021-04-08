@@ -1,7 +1,7 @@
 import { throttle, isArray, isNil } from 'lodash'
-import { create, setAttr, setStyle } from '../tools/extension/dom'
-import { each } from '../tools/extension/iteration'
-import Watcher from '../tools/observer/watcher'
+import { create, setAttr, setStyle } from '../../tools/dom'
+import { each } from '../../tools/iteration'
+import Watcher from '../../tools/observer/watcher'
 import { default as Attributes } from './attrs'
 import Classes from './classes'
 import { default as Styles } from './styles'
@@ -191,6 +191,28 @@ class Panel {
 
   showing () {
     this.styles.disable = 'auto'
+  }
+
+  append (dom) {
+    if (dom instanceof Panel) {
+      this.domContainer.append(dom.domContainer)
+    } else {
+      this.domContainer.append(dom)
+    }
+  }
+  remove (dom) {
+    if (dom instanceof Panel) {
+      this.domContainer.removeChild(dom.domContainer)
+    } else {
+      this.domContainer.removeChild(dom)
+    }
+  }
+
+  getOrigin () {
+    return this.domContainer
+  }
+  getCanvas () {
+    return this.dom
   }
 }
 

@@ -1,8 +1,8 @@
-import { combineInto } from '../tools/extension/define'
-import { removeStyle, setStyle } from '../tools/extension/dom'
-import { acquistion } from '../tools/extension/proxy'
-import Observer from '../tools/observer'
-import Watcher from '../tools/observer/watcher'
+import { combineInto } from '../../tools/define'
+import { removeStyle, setStyle } from '../../tools/dom'
+import { acquistion } from '../../tools/proxy'
+import Observer from '../../tools/observer'
+import Watcher from '../../tools/observer/watcher'
 
 const { default: Attributes } = require('./attrs')
 

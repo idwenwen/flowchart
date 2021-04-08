@@ -43,9 +43,10 @@ export default class Content extends Tree {
 
   getChildsFigure () {
     const final = []
-    for (const val of this.children) {
+    for (const val of this.getChildren()) {
       final.push(val.figure)
     }
+    return final
   }
 
   toRender () {
@@ -55,11 +56,8 @@ export default class Content extends Tree {
       new ContentText()
     ])
     this.figure = toFigure({
-      data: this.toParameter(),
-      events: this.toEvent(),
-      children: [
-        this.getChildsFigure()
-      ]
+      data: this.getParameter(),
+      children: this.getChildsFigure()
     })
     return this.figure
   }

@@ -6,7 +6,7 @@
 
 <script>
 import HelloWorld from './components/HelloWorld'
-import FlowChart from './components/diagram/example'
+import FlowChart from './components/CanvasRender'
 
 export default {
   name: 'App',

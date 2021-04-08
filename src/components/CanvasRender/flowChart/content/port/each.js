@@ -4,6 +4,8 @@ import { DISABLE_NO_INIT_COLOR, DISABLE_INIT_COLOR, DATA_PORT_COLOR, MODEL_PORT_
 import { portType } from './portConfig'
 import Tree from '../../../tools/tree'
 import { toFigure } from '../../../core/figure'
+import { compareToPos } from '../../utils'
+import LinkHint from '../../subContent/hint'
 
 function portColor (disable, status, type) {
   return disable
@@ -18,9 +20,9 @@ function portColor (disable, status, type) {
 function getImage (multiple, type) {
   if (multiple) {
     if (type.toLowerCase().match('data')) {
-      return icons.multData
+      return GLOBAL.getIcons('multData')
     } else {
-      return icons.multModel
+      return GLOBAL.getIcons('multModel')
     }
   }
   return null
@@ -43,22 +45,54 @@ export default class Port extends Tree {
 
     this.num = 0 // 当前port内容属于相关类型之中的第几项
     this.len = 0 // 相同位置port内容的个数
+    this.hasConnect = false
+
     this.figure = null // 当前对象针对的实例内容。
     this.toRender()
   }
 
-  linking (figure, point) {
+  linkFrom (pos) {
     // 表示当前对象不是outer内容。
     if (GLOBAL.linking.checkWithFrom(this)) {
-      if (GLOBAL.linking.hasFrom()) { // 表示当前内容是否已经可以确定。
+      if (GLOBAL.linking.hasFrom() && !this.hasConnect) {
+        // 表示当前内容是否已经可以确定。
         // 计算当前内容的位置是否符合预期。如果是符合预期的则添加相关的连接参数。
+        const final = compareToPos(
+          pos,
+          this.root().panel.getOrigin(),
+          GLOBAL.globalPanel.getOrigin()
+        )
+        GLOBAL.createLinking(final, final, this)
+        return true
       }
     }
+    return false
+  }
+
+  linkOut (linking) {
+    if (!this.multiple) {
+      this.hasConnect = true
+    }
+    this.root().addLinkOut(linking)
+  }
+  linkInto (linking) {
+    if (!this.multiple) {
+      this.hasConnect = true
+    }
+    this.root().addLinkInto(linking)
   }
 
   // 为当前port添加Hint内容。
-  linkingHint (figure, type) {
-
+  linkingHint (type) {
+    // 当前位置覆盖一个subContent内容。
+    // 判定当前的内容是有关联关系
+    if ((this.type.match(/input/i) && type.match(/output/i)) ||
+      (this.type.match(/output/i) && type.match(/input/i))) {
+      if ((this.type.match(/data/i) && type.match(/data/i)) ||
+        (this.type.match(/model/i) && type.match(/model/i))) {
+        this.root().addSub(this.name, new LinkHint(this)) // 添加当前的sub内容
+      }
+    }
   }
 
   getParameter () {
@@ -111,7 +145,13 @@ export default class Port extends Tree {
     return false
   }
 
-  currentPosition () {
-    return this.figure.center
+  currentPosition (target) {
+    return !target
+      ? this.figure.center
+      : compareToPos(
+        this.figure.center,
+        this.root().panel.getOrigin(),
+        target
+      )
   }
 }

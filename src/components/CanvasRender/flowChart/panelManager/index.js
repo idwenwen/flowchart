@@ -1,5 +1,5 @@
 import UUID from '../../tools/uuid'
-import { toArray } from '../../tools/extension/iteration'
+import { toArray } from '../../tools/iteration'
 import PanelOperation from './panelOperation'
 import Panel from '../../core/panel'
 
@@ -18,10 +18,6 @@ function getLeftTop (width, height, position) {
 
 // 当前组件主要用于管理Panel内容的相关推算以及diagram之中Panel对象的修改
 class PanelManager extends PanelOperation {
-  static width = 240;
-  static height = 55;
-  static point = [0, 0];
-
   // uuid: string; // 唯一标识符
 
   constructor (setting) {
@@ -95,5 +91,9 @@ class PanelManager extends PanelOperation {
     return this.panel
   }
 }
+
+PanelManager.width = 240
+PanelManager.height = 55
+PanelManager.point = [0, 0]
 
 export default PanelManager

@@ -1,5 +1,5 @@
 import { isArray, isNil, isObject } from 'lodash'
-import record, { Exception } from '../../exception'
+import { record } from '../exception'
 
 // 遍历对象内容
 function iterationObject (object, operation) {
@@ -69,11 +69,8 @@ export function each (origin) {
     }
   } else {
     // 不支持map， object， array之外的数据类行进行遍历。
-    record(
-      new Exception('NotSupport',
-        'Do not support to iterate this kind of data currently',
-        Exception.level.Warn,
-        false)
+    record('NotSupport',
+      'Do not support to iterate this kind of data currently'
     )
   }
 }
@@ -85,11 +82,8 @@ export function eachRight (origin) {
     }
   } else {
     // 不支持array之外的数据类行进行反向遍历。
-    record(
-      new Exception('NotSupport',
-        'Do not support to iterate this kind of data currently',
-        Exception.level.Warn,
-        false)
+    record('NotSupport',
+      'Do not support to iterate this kind of data currently'
     )
   }
 }

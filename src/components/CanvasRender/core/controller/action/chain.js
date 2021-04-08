@@ -1,7 +1,7 @@
 import { toAction } from './action'
 import { eq, remove } from 'lodash'
-import { each, toArray } from '../../tools/extension/iteration'
-import UUID from '../../tools/uuid'
+import { each, toArray } from '../../../tools/iteration'
+import UUID from '../../../tools/uuid'
 import Player from './player'
 
 // 动作链的唯一标识
