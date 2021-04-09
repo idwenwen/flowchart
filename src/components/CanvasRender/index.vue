@@ -37,7 +37,7 @@ export default {
         choose: false,
         disable: false,
         role: 'guest',
-        status: 'running'
+        status: 'success'
       }, {
         type: 'secureboost',
         choose: false,

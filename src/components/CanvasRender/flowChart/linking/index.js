@@ -2,16 +2,13 @@
  * 链接内容
  */
 import UUID from '../../tools/uuid'
-import { each } from '../../tools/extension/iteration'
-import Diagram from '../../diagram'
-import { getMainCanvas } from '../canvas'
 import PanelManager from '../panelManager'
-import { compareToPos } from '../utils'
 import config from './config'
 import Curve from './curve'
-import { Exception } from '../../tools/exception'
 import Tree from '../../tools/tree'
 import GLOBAL from '../env/global'
+import Diagram from '../../core/diagram'
+import { getPos } from '../utils'
 
 const linkingId = new UUID()
 class Linking extends Tree {
@@ -118,9 +115,13 @@ class Linking extends Tree {
     }
   }
   getPanelEvents () {
+    const _t = this
     return {
       'click': function (eve) {
-
+        if (_t.figure.isPointInFigure(getPos(eve))) {
+          GLOBAL.choosen.choose(_t)
+          eve.stopPropagation()
+        }
       }
     }
   }
@@ -137,17 +138,19 @@ class Linking extends Tree {
       events: this.getEvents(),
       children: (() => {
         const res = []
-        this.children.forEach(val => {
+        this.getChildren().forEach(val => {
           res.push(val.figure)
         })
         return res
       })()
     })
+    GLOBAL.globalPanel.append(this.panel)
+    return this.figure
   }
 
   // 当前内容为位移改变
   updatePanelAndDiagram () {
-    const { pos, width, height } = this.getOrigin(
+    const { pos, width, height } = this._getOrigin(
       this.startPoint,
       this.endPoint
     )
@@ -159,10 +162,6 @@ class Linking extends Tree {
       endPoint: this.endPoint
     })
   }
-  changeStart (point) {
-    this.startPoint = point
-    this.updatePanelAndDiagram()
-  }
   translateStart (x, y) {
     const origin = this.startPoint
     this.startPoint = [origin[0] + x, origin[1] + y]
@@ -173,6 +172,10 @@ class Linking extends Tree {
     this.endPoint = [origin[0] + x, origin[1] + y]
     this.updatePanelAndDiagram()
   }
+  changeStart (point) {
+    this.startPoint = point
+    this.updatePanelAndDiagram()
+  }
   changeEnd (point) {
     this.endPoint = point
     this.updatePanelAndDiagram()
@@ -181,6 +184,13 @@ class Linking extends Tree {
     this.startPoint = startPoint
     this.endPoint = endPoint
     this.updatePanelAndDiagram()
+  }
+  changing (point) {
+    if (this.from) {
+      this.changeEnd(point)
+    } else if (this.end) {
+      this.changeStart(point)
+    }
   }
 
   // 选中事件触发
@@ -196,6 +206,7 @@ class Linking extends Tree {
   }
   linkEnd () {
     this.panel.styles['z-index'] = 1
+    this.figure.dispatchEvents('toSolid')
   }
 
   clearUp () {
@@ -205,46 +216,3 @@ class Linking extends Tree {
 }
 
 export default Linking
-
-function findInTree (comp, name) {
-  let point = [0, 0]
-  comp.diagram.notify(function () {
-    if (this.data.cache.name && this.data.cache.name === name) {
-      point = this.data.cache.center
-      point = compareToPos(point, this.root().panel.dom, getMainCanvas().canvas)
-      throw new Exception('BreakingException', 'Ending iteration', Exception.level.Warn)
-    }
-  })
-  return point
-}
-
-export function linkComps (fromComp, toComp, fromPort, toPort) {
-  const fromPortName = fromPort.join('|') + '_Output'
-  const toPortName = toPort.join('|') + '_Input'
-  const from = findInTree(fromComp, fromPortName)
-  const end = findInTree(toComp, toPortName)
-  const linking = new Linking(from, end, null, fromComp, toComp)
-  linking.fromPort = (() => {
-    let res = null
-    each(fromComp.borderPorts[fromPort[0] + 'Output'])(function (port) {
-      if (port.name === fromPortName) {
-        res = port
-        throw new Exception('BreakingException', 'Ending iteration', Exception.level.Warn)
-      }
-    })
-    return res
-  })()
-  linking.endPort = (() => {
-    let res = null
-    each(toComp.borderPorts[toPort[0] + 'Input'])(function (port) {
-      if (port.name === toPortName) {
-        res = port
-        throw new Exception('BreakingException', 'Ending iteration', Exception.level.Warn)
-      }
-    })
-    return res
-  })()
-  getMainCanvas().container.append(linking.panelManager.domContainer)
-  linking.diagram.dispatchEvents('linkSuccessed')
-  return linking
-}

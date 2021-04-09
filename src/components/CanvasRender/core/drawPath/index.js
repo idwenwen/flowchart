@@ -30,13 +30,17 @@ class DrawPath {
   }
   // 全局PATH对象的获取方法。
   static get (name) {
-    const result = DrawPath.PATH.get(name)
-    if (!result) {
-      record('DoNotMatched',
-        `There has no value related to ${name}`)
+    try {
+      const result = DrawPath.PATH.get(name)
+      if (!result) {
+        record('DoNotMatched',
+          `There has no value related to ${name}`)
+        return null
+      } else {
+        return result
+      }
+    } catch (err) {
       return null
-    } else {
-      return result
     }
   }
 

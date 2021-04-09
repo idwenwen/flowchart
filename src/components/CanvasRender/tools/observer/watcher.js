@@ -141,6 +141,8 @@ class Watcher {
           'Current watcher is not working'
         )
       }
+    } catch (err) {
+      void 0
     } finally {
       void 0
     }

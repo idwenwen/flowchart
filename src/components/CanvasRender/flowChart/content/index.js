@@ -8,6 +8,7 @@ import Diagram from '../../core/diagram'
 import GLOBAL from '../env/global'
 import SubCompManager from '../subContent'
 import { getPos } from '../utils'
+import UUID from '../../tools/uuid'
 
 export const ComponentsStatus = {
   unrun: 'unrun|waiting',
@@ -59,6 +60,7 @@ class GlobalNameCheck {
   }
 }
 const defaultName = new GlobalNameCheck()
+const TreeID = new UUID(index => `figure_${index}`)
 
 export default class Component extends Tree {
   constructor (
@@ -80,7 +82,7 @@ export default class Component extends Tree {
     }
   ) {
     super()
-    this.id = id
+    this.id = id || TreeID.get()
     this.type = type
     this.status = matchStatus('unrun')
     this.disable = disable
@@ -105,6 +107,7 @@ export default class Component extends Tree {
     this.figure = null
     this.panel = null
     this.toRender(width, height, point, status)
+    GLOBAL.registerComp(this.id, this)
   }
 
   // diagram 组件的配置信息与组件内容。
@@ -233,11 +236,11 @@ export default class Component extends Tree {
     return {
       'mousedown': function (eve) {
         // 记录当前的点击位置
-        eve.stopPropagation()
         // 获取当前port的对象
-        const mid = _t.checkPositionForPort(getPos(eve))
+        const pos = getPos(eve)
+        const mid = _t.checkPositionForPort(pos)
         if (mid) {
-          mid.linkFrom(eve) // 创建连接,结果表示当前连接是否成功
+          mid.linkFrom(pos) // 创建连接,结果表示当前连接是否成功
         } else {
           // 如果当前没有连接的话，设置当前内容为moving
           GLOBAL.moving.setMove(_t)
@@ -245,10 +248,12 @@ export default class Component extends Tree {
       },
       'click': function (eve) {
         // 当前内容被选中
-        eve.stopPropagation()
-        if (_t.lastStatus !== 'moving') {
+        debugger
+        if (_t.lastStatus !== 'moving' && _t.figure.isPointInFigure(getPos(eve))) {
           GLOBAL.choosen.choose(_t)
+          eve.stopPropagation()
         }
+        _t.lastStatus = 'click'
       }
     }
   }
@@ -258,6 +263,7 @@ export default class Component extends Tree {
       new Content(),
       new ContentPorts(this.type, this.single, this.role)
     ]
+    this.setChildren(childList)
     this.panel = new PanelManager({
       width,
       height,
@@ -282,6 +288,18 @@ export default class Component extends Tree {
 
   checkPositionForPort (position) {
     return this.getChildren()[1].inPort(position)
+  }
+  checkHintForPort (list, type) {
+    if (list.indexOf(this) < 0) {
+      this.getChildren()[1].linkHint(type)
+    }
+  }
+
+  choose () {
+    this.figure.dispatchEvents('choosen')
+  }
+  unchoose () {
+    this.figure.dispatchEvents('unchoosen')
   }
 
   addSub (name, subComp) {
@@ -323,5 +341,22 @@ export default class Component extends Tree {
     })
     this.subs.clearUp()
     GLOBAL.globalPanel.remove(this.panel)
+    GLOBAL.globalComp.delete(this.id)
+  }
+
+  getConnection () {
+    const getTopper = function (node) {
+      const willNotHint = []
+      const final = []
+      for (const val of node.linkInto) {
+        willNotHint.push(val.from.root())
+      }
+      for (const val of willNotHint) {
+        final.push(...getTopper(val))
+      }
+      final.push(node)
+      return Array.from(new Set(final))
+    }
+    return getTopper(this)
   }
 }

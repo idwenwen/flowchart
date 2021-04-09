@@ -80,12 +80,16 @@ class Animate {
   // 动画对象的操作
   _operation (name, opera, running) {
     // 获取actio对象
-    const actions = !running ? this.animations.get(name) : this.running.get(name)
-    if (!actions) {
-      record('DonotExist',
-        `There has no animation nameed ${name} can be dispatch`)
-    } else {
-      opera(actions)
+    try {
+      const actions = !running ? this.animations.get(name) : this.running.get(name)
+      if (!actions) {
+        record('DonotExist',
+          `There has no animation nameed ${name} can be dispatch`)
+      } else {
+        opera(actions)
+      }
+    } catch (err) {
+      void 0
     }
   }
 

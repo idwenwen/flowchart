@@ -1,4 +1,4 @@
-export default class Linking {
+export default class LinkingManager {
   constructor () {
     this.outter = null
     this.inner = null
@@ -36,5 +36,12 @@ export default class Linking {
   }
   hasInner () {
     return !!this.inner
+  }
+
+  clear () {
+    this.outter = null
+    this.inner = null
+    this.outerPosition = null
+    this.linking = null
   }
 }

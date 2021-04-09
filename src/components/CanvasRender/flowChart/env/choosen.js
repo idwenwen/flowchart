@@ -15,6 +15,7 @@ export default class Choosen {
     this.emiter.setContext(item)
     this.emiter.dispatch('before', this.choose)
     this.choosen = item
-    this.emiter.dispatch('after')
+    this.choosen.choose && this.choosen.choose()
+    this.emiter.dispatch('after', this.choosen)
   }
 }

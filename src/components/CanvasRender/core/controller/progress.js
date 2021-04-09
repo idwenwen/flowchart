@@ -18,12 +18,16 @@ class Progress {
    * @param type {string} speed-rate function identification
    */
   static get (type) {
-    const result = Progress.RATE.get(type)
-    if (!result) {
+    try {
+      const result = Progress.RATE.get(type)
+      if (!result) {
       // There has no result
-      record('MapHasNoSuchInfo',
-        `Can not find value implying to ${type} from Progress.SpeedRate`)
-    } else return result
+        record('MapHasNoSuchInfo',
+          `Can not find value implying to ${type} from Progress.SpeedRate`)
+      } else return result
+    } catch (error) {
+      return null
+    }
   }
 
   // curve: RateCurve; 变化曲线

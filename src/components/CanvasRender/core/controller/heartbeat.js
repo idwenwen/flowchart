@@ -38,15 +38,19 @@ class HeartBeat {
    * @param {string} name 动画名称
    */
   pause (name) {
-    const res = this.runningActions.get(name)
-    if (res) {
+    try {
+      const res = this.runningActions.get(name)
+      if (res) {
       // 将running之中的动作放置到
-      this.runningActions.delete(name)
-      this.pausingActions.set(name, res)
-      return true
-    } else {
-      record('DonotExist', `Do not have value name matched with ${name}`)
-      return false
+        this.runningActions.delete(name)
+        this.pausingActions.set(name, res)
+        return true
+      } else {
+        record('DonotExist', `Do not have value name matched with ${name}`)
+        return false
+      }
+    } catch (err) {
+      void 0
     }
   }
 
@@ -55,15 +59,19 @@ class HeartBeat {
    * @param {String} name 动画名称
    */
   continue (name) {
-    const res = this.pausingActions.get(name)
-    if (res) {
-      this.pausingActions.delete(name)
-      this.runningActions.set(name, res)
-      this.trigger() // 新加running内容，判定当前心跳是否启动。
-      return true
-    } else {
-      record('DonotExist', `Do not have value name matched with ${name}`)
-      return false
+    try {
+      const res = this.pausingActions.get(name)
+      if (res) {
+        this.pausingActions.delete(name)
+        this.runningActions.set(name, res)
+        this.trigger() // 新加running内容，判定当前心跳是否启动。
+        return true
+      } else {
+        record('DonotExist', `Do not have value name matched with ${name}`)
+        return false
+      }
+    } catch (err) {
+      void 0
     }
   }
 

@@ -5,7 +5,9 @@ export default class Moving {
   }
   setMove (moving) {
     this.moving = moving
-    this.currentPosition = this.moving.getPositin()
+    if (this.moving) {
+      this.currentPosition = this.moving.getPosition()
+    }
   }
   getMove () {
     return this.moving

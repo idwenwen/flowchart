@@ -41,30 +41,34 @@ class Events {
 
   // 事件触发。
   dispatch (name, ...meta) {
-    let eve = this.eventsList.get(name) // 获取当前时间函数
-    if (!eve) {
-      record('DonotExist',
-        `There has no event name ${name}`)
+    try {
+      let eve = this.eventsList.get(name) // 获取当前时间函数
+      if (!eve) {
+        record('DonotExist',
+          `There has no event name ${name}`)
+        return false
+      }
+
+      const _t = this
+      // 将当前时间逻辑设置称为一次action的内容统一添加到当前的公共心跳之中。
+      once(this.context, () => {
+        const willRemove = []
+        // 设置当前转变到心跳函数之中，进行同步操作。
+        const evelist = toArray(eve)
+        each(evelist)((func, index) => {
+          func.event.call(_t.context, ...meta)
+          // 删除单次事件
+          if (func.once) willRemove.push(index)
+        })
+        remove(evelist, (_item, index) => {
+          willRemove.find((val) => val === index)
+        })
+        _t.eventsList.set(name, evelist)
+      })
+      return true
+    } catch (err) {
       return false
     }
-
-    const _t = this
-    // 将当前时间逻辑设置称为一次action的内容统一添加到当前的公共心跳之中。
-    once(this.context, () => {
-      const willRemove = []
-      // 设置当前转变到心跳函数之中，进行同步操作。
-      const evelist = toArray(eve)
-      each(evelist)((func, index) => {
-        func.event.call(_t.context, ...meta)
-        // 删除单次事件
-        if (func.once) willRemove.push(index)
-      })
-      remove(evelist, (_item, index) => {
-        willRemove.find((val) => val === index)
-      })
-      _t.eventsList.set(name, evelist)
-    })
-    return true
   }
 }
 

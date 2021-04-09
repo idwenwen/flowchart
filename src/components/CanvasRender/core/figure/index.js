@@ -93,7 +93,6 @@ class Figure extends Tree {
         return Object.assign({}, _t)
       },
       function (_result) {
-        debugger
         // TODO:需要将当前figure变动通知到drawing内容。
         _t.root().render()
       }

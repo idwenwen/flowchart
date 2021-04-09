@@ -1,4 +1,5 @@
 
+import { throttle } from 'lodash'
 import Panel from '../../core/panel'
 import { getPos } from '../utils'
 import Callback from './callback'
@@ -6,23 +7,42 @@ import { EventEmitterForDom } from './eventEmitter'
 import GLOBAL from './global'
 
 let origin = null
+let hasMoving = false
+const MOVING_FUNC = throttle(function (m, pos) {
+  const x = pos[0] - origin[0]
+  const y = pos[1] - origin[1]
+  m.translate({
+    x, y
+  })
+  origin = pos
+}, 50)
 const preEvents = {
   mousedown (eve) {
-    origin = getPos(eve)
+    origin = getPos(eve, GLOBAL.globalPanel.getOrigin())
   },
   mousemove (eve) {
+    hasMoving = true
     const l = GLOBAL.linking.linking
-    const pos = getPos(eve)
+    const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
     if (l) {
-      l.changeEnd(pos)
+      l.changing(pos)
     }
     const m = GLOBAL.moving.getMove()
     if (m) {
-      const x = pos[0] - origin[0]
-      const y = pos[1] - origin[1]
-      m.translate({
-        x, y
-      })
+      MOVING_FUNC(m, pos)
+      m.lastStatus = 'moving'
+    }
+  },
+  mouseup (eve) {
+    const l = GLOBAL.linking.linking
+    const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
+    if (l) {
+      GLOBAL.createConnection(pos)
+    }
+    const m = GLOBAL.moving.getMove()
+    if (m) {
+      MOVING_FUNC(m, pos)
+      GLOBAL.moving.setMove()
     }
   },
   mouseout (eve) {
@@ -31,7 +51,9 @@ const preEvents = {
   click (eve) {
     // 点击了空白处，所以无选中
     eve.stopPropagation()
-    GLOBAL.choosen.choose(null)
+    if (!hasMoving) {
+      GLOBAL.choosen.choose(GLOBAL.belongTo(getPos(eve)) || null)
+    }
   }
 }
 
@@ -60,7 +82,7 @@ export default class BackendPanel {
     this.panel.append(dom)
   }
   remove (dom) {
-    this.panel.removeChild(dom)
+    this.panel.remove(dom)
   }
   setParent (parent) {
     this.parent = parent

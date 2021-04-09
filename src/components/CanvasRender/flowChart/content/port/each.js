@@ -1,11 +1,11 @@
 import { ComponentsStatus } from '..'
-import GLOBAL from '../../../tools/env'
 import { DISABLE_NO_INIT_COLOR, DISABLE_INIT_COLOR, DATA_PORT_COLOR, MODEL_PORT_COLOR } from './config'
 import { portType } from './portConfig'
 import Tree from '../../../tools/tree'
 import { toFigure } from '../../../core/figure'
 import { compareToPos } from '../../utils'
 import LinkHint from '../../subContent/hint'
+import GLOBAL from '../../env/global'
 
 function portColor (disable, status, type) {
   return disable
@@ -28,11 +28,11 @@ function getImage (multiple, type) {
   return null
 }
 
-function getPosition (compWidth, compHeight, type, len, num) {
+function getPosition (compWidth, compHeight, center, type, len, num) {
   const vertical = (compHeight / 2) * (type.match(/input/i) ? -1 : 1)
-  const piece = (compWidth) / len
-  const horizen = -(len / 2 - num - 1) * piece
-  return [this.center[0] + horizen, this.center[1] + vertical]
+  const piece = (compWidth) / (len + 1)
+  const horizen = -((len + 1) / 2 - num - 1) * piece
+  return [center[0] + horizen, center[1] + vertical]
 }
 
 export default class Port extends Tree {
@@ -53,8 +53,8 @@ export default class Port extends Tree {
 
   linkFrom (pos) {
     // 表示当前对象不是outer内容。
-    if (GLOBAL.linking.checkWithFrom(this)) {
-      if (GLOBAL.linking.hasFrom() && !this.hasConnect) {
+    if (!GLOBAL.linking.checkWithFrom(this)) {
+      if (!GLOBAL.linking.hasFrom() && !this.hasConnect) {
         // 表示当前内容是否已经可以确定。
         // 计算当前内容的位置是否符合预期。如果是符合预期的则添加相关的连接参数。
         const final = compareToPos(
@@ -83,14 +83,17 @@ export default class Port extends Tree {
   }
 
   // 为当前port添加Hint内容。
-  linkingHint (type) {
+  linkHint (type) {
     // 当前位置覆盖一个subContent内容。
     // 判定当前的内容是有关联关系
     if ((this.type.match(/input/i) && type.match(/output/i)) ||
       (this.type.match(/output/i) && type.match(/input/i))) {
       if ((this.type.match(/data/i) && type.match(/data/i)) ||
         (this.type.match(/model/i) && type.match(/model/i))) {
-        this.root().addSub(this.name, new LinkHint(this)) // 添加当前的sub内容
+        if (!this.hasConnect) {
+          const sub = new LinkHint(this)
+          this.root().addSub(sub.id, sub) // 添加当前的sub内容
+        }
       }
     }
   }
@@ -100,7 +103,7 @@ export default class Port extends Tree {
     return {
       name: this.name,
       color () {
-        portColor(this.disable, this.status, _t.type)
+        return portColor(this.disable, this.status, _t.type)
       },
       image () {
         return getImage(_t.multiple, _t.type)
@@ -115,7 +118,7 @@ export default class Port extends Tree {
         return this.height
       },
       center () {
-        return getPosition(this.actualWidth, this.actualHeight, _t.type, _t.len, _t.num)
+        return getPosition(this.actualWidth, this.actualHeight, this.center, _t.type, _t.len, _t.num)
       },
       tip: _t.tip
     }
@@ -147,9 +150,9 @@ export default class Port extends Tree {
 
   currentPosition (target) {
     return !target
-      ? this.figure.center
+      ? this.figure.data.cache.center
       : compareToPos(
-        this.figure.center,
+        this.figure.data.cache.center,
         this.root().panel.getOrigin(),
         target
       )

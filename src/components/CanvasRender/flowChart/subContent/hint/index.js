@@ -26,26 +26,27 @@ export default class LinkHint extends Tree {
   getParameter () {
     return {
       width () {
-        return this.attr.width * 0.9
+        return this.attrs.width * 0.9
       },
       height () {
-        return this.attr.height * 0.9
+        return this.attrs.height * 0.9
       },
       center () {
         return [
-          this.attr.width / 2,
-          this.attr.height / 2
+          (this.attrs.width / 2) * 0.98,
+          (this.attrs.height / 2) * 0.98
         ]
       }
     }
   }
 
   getPanelParameter () {
-    const rectWidth = 35
-    const point = this.main.figure.center
+    const rectWidth = 25
+    const rectHeight = 25
+    const point = this.main.figure.data.cache.center
     return {
       width: rectWidth,
-      height: rectWidth,
+      height: rectHeight,
       point
     }
   }
@@ -53,35 +54,36 @@ export default class LinkHint extends Tree {
   displayAnimate () {
     let originWidth = null
     let originHeight = null
-    return toChain([{
-      variation (progress) {
-        if (!originWidth) originWidth = this.width
-        if (!originHeight) originHeight = this.height
-        this.width = Action.get('number')(progress, 0, originWidth)
-        this.height = Action.get('number')(progress, 0, originHeight)
-      },
-      time: 500
-    }, {
-      variation (_progress) {
-        originWidth = null
-        originHeight = null
-      },
-      time: 0
-    }])
+    return toChain({
+      list: [{
+        variation (progress) {
+          if (!originWidth) originWidth = this.width
+          if (!originHeight) originHeight = this.height
+          this.width = Action.get('number')(progress, 0, originWidth)
+          this.height = Action.get('number')(progress, 0, originHeight)
+        },
+        time: 500
+      }, {
+        variation (_progress) {
+          originWidth = null
+          originHeight = null
+        },
+        time: 0
+      }]})
   }
 
   hiddenAnimate () {
     const _t = this
     let originWidth = null
     let originHeight = null
-    return toChain([{
+    return toChain({list: [{
       variation (progress) {
         if (!originWidth) originWidth = this.width
         if (!originHeight) originHeight = this.height
         this.width = Action.get('number')(progress, originWidth, 0)
         this.height = Action.get('number')(progress, originWidth, 0)
       },
-      time: 500
+      time: 200
     }, {
       variation (_progress) {
         originWidth = null
@@ -89,19 +91,20 @@ export default class LinkHint extends Tree {
         _t.clearUp()
       },
       time: 0
-    }])
+    }]})
   }
 
   toRender () {
     this.panel = new PanelManager(this.getPanelParameter()).panel
     this.setChildren([
-      new HintContent(),
-      new HintBorder()
+      new HintContent(this.main),
+      new HintBorder(this.main)
     ])
     this.figure = new Diagram(this.panel, {
       data: this.getParameter(),
-      animates: {
-        showOn: this.displayAnimate
+      animate: {
+        showOn: this.displayAnimate(),
+        showOff: this.hiddenAnimate()
       },
       children: (() => {
         const res = []
@@ -112,13 +115,13 @@ export default class LinkHint extends Tree {
       })()
     })
     // 主组件内容之中添加当前内容的panel信息
-    this.main.root().panel.append(this.panel)
+    this.figure.dispatchAnimate('showOn')
     return this.figure
   }
 
   linkInto (pos) {
     // 在当前范围内的时候，将当前内容的port的相关内容关联起来。
-    if (this.figure.isPointInPath(pos)) {
+    if (this.figure.isPointInFigure(pos)) {
       return this.main
     }
     return false
@@ -126,6 +129,9 @@ export default class LinkHint extends Tree {
 
   clearUp () {
     const root = this.main.root()
+    for (const val of this.getChildren()) {
+      val.clearUp()
+    }
     root.panel.remove(this.panel)
     GLOBAL.removeHint(this.id)
   }

@@ -93,4 +93,10 @@ export default class ContentPorts extends Tree {
     }
     return false
   }
+
+  linkHint (type) {
+    for (const val of this.getChildren()) {
+      val.linkHint(type)
+    }
+  }
 }

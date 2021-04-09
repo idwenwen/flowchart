@@ -19,6 +19,7 @@ class Curve extends Tree {
     this.isDash = true
     this.figure = null
     this.panel = null
+    this.toRender()
   }
 
   getParameter () {

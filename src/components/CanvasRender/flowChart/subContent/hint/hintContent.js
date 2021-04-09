@@ -4,9 +4,11 @@ import Tree from '../../../tools/tree'
 import { DATA_PORT_COLOR, MODEL_PORT_COLOR } from './config'
 
 export default class HintContent extends Tree {
-  constructor () {
+  constructor (main) {
     super()
+    this.main = main
     this.figure = null
+    this.toRender()
   }
 
   getParameter () {
@@ -32,5 +34,10 @@ export default class HintContent extends Tree {
       path: 'circle'
     })
     return this.figure
+  }
+
+  clearUp () {
+    this.main = null
+    this.figure = null
   }
 }

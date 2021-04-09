@@ -8,7 +8,9 @@ export function record (alias, msg, cache = false, level = 'info') {
       if (cache) {
         logger.addLogger(level, exception.toMsg())
       }
+      throw exception
     } catch (err) {
+      console.error(err)
       throw err
     }
   }

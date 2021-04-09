@@ -1,9 +1,11 @@
 import Component from '../content'
+import Linking from '../linking'
 import { compareToPos } from '../utils'
 import Choosen from './choosen'
+import Connection from './connection'
 import { EventEmitter } from './eventEmitter'
 import Icons from './icon'
-import Linking from './linking'
+import LinkingManager from './linking'
 import Moving from './moving'
 import BackendPanel from './panel'
 
@@ -11,8 +13,9 @@ export class Global extends EventEmitter {
   constructor () {
     super()
     this.choosen = new Choosen()
-    this.linking = new Linking()
+    this.linking = new LinkingManager()
     this.moving = new Moving()
+    this.connection = new Connection()
 
     this.globalIcons = new Icons()
     this.globalComp = new Map()
@@ -42,6 +45,11 @@ export class Global extends EventEmitter {
   removeHint (id) {
     this.globalHint.delete(id)
   }
+  clearHint () {
+    for (const val of this.globalHint) {
+      val[1].clearUp()
+    }
+  }
 
   // 比对当前所有属性内容是否是
   positionInHint (position) {
@@ -59,14 +67,16 @@ export class Global extends EventEmitter {
   // 创建当前的可用连线
   createLinking (startPoint, endPoint, port) {
     const l = new Linking(startPoint, endPoint)
-    l.linkStart()
+    const list = port.root().getConnection()
+    l.linkStart() // 创建连线。
+    this.createLinkHint(list, port.type)
     this.linking.link(l) // 设置当前的连线信息
     if (port.type.match(/output/i)) { // 当前端口是否是输出端口
       this.linking.from(port)
-      l.end = port // 设置linking自身的启始或结束内容
+      l.from = port
     } else {
       this.linking.into(port)
-      l.from = port
+      l.end = port
     }
   }
   createConnection (position, port) {
@@ -80,26 +90,35 @@ export class Global extends EventEmitter {
     }
     if (!port) {
       l.clearUp()
+      this.linking.clear()
+      this.clearHint()
+      return void 0
     }
-    l.changeEnd(position)
+    l.changing(port.currentPosition(this.globalPanel.getOrigin()))
     if (port.type.match(/output/i)) { // 当前端口是否是输出端口
       this.linking.from(port)
-      l.end = port // 设置linking自身的启始或结束内容
+      l.from = port // 设置linking自身的启始或结束内容
     } else {
       this.linking.into(port)
-      l.from = port
+      l.end = port
     }
     // 通知当前相关port的内容设置。
-    l.changeEnd(port.currentPosition(this.globalPanel.getOrigin()))
-    l.from.linkFrom(l)
+    l.from.linkOut(l)
     l.end.linkInto(l)
     l.linkEnd()
+    this.clearHint()
+    this.linking.clear()
   }
   createConnectionDir (startPos, endPos, from, end) {
     const l = new Linking(startPos, endPos, from, end)
     from.addLinkOut(l)
     end.addLinkInto(l)
     l.linkEnd()
+  }
+  createLinkHint (list, type) {
+    for (const val of this.globalComp) {
+      val[1].checkHintForPort(list, type)
+    }
   }
 
   getIcon (type) {
@@ -113,6 +132,22 @@ export class Global extends EventEmitter {
   }
   setParent (parent) {
     this.globalPanel.setParent(parent)
+  }
+  belongTo (pos) {
+    const checking = (map) => {
+      for (const val of map) {
+        if (val[1].figure.isPointInFigure(
+          compareToPos(pos, GLOBAL.globalPanel.getOrigin(), val[1].panel.getOrigin())
+        )) {
+          return val[1]
+        }
+      }
+      return false
+    }
+    let comp = checking(this.globalComp)
+    if (comp) return comp
+    comp = checking(this.globalLinking)
+    if (comp) return comp
   }
 }
 
