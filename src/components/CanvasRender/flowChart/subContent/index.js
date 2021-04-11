@@ -36,6 +36,14 @@ class SubCompManager {
     return this.connect.delete(key)
   }
 
+  filter (opera) {
+    for (const val of this.connect) {
+      if (opera(val[0])) {
+        this.remove(val[0])
+      }
+    }
+  }
+
   updatePosition (x, y) {
     each(this.connect, (val) => {
       val.updatePosition(x, y)

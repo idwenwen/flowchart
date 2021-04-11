@@ -247,10 +247,14 @@ class Tree {
    * @param reserve 是否反向执行
    */
   notify (operation, fromRoot = true, deep = true, reserve = false) {
-    const root = fromRoot ? this.root() : this
-    const iter = root.iteration(deep, reserve)
-    for (const val of iter) {
-      operation.call(val, val)
+    try {
+      const root = fromRoot ? this.root() : this
+      const iter = root.iteration(deep, reserve)
+      for (const val of iter) {
+        operation.call(val, val)
+      }
+    } catch (err) {
+      void 0
     }
   }
 }

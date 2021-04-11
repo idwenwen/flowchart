@@ -1,21 +1,25 @@
-import { EventEmitter } from './eventEmitter'
-
 export default class Choosen {
-  constructor () {
+  constructor (main) {
     this.choosen = null
-    this.emiter = new EventEmitter({
-      'before': function (choosed) {
-        // 触发当前组件的unchoose事件
-        choosed.figure.dispatchEvents('unchoose')
-      }
-    })
+    this.emiter = main
   }
 
   choose (item) {
     this.emiter.setContext(item)
-    this.emiter.dispatch('before', this.choose)
+    this.emiter.dispatch('beforeChoose', this.choose)
+    if (this.choosen) {
+      this.choosen.unchoosen && this.choosen.unchoosen()
+    }
     this.choosen = item
-    this.choosen.choose && this.choosen.choose()
-    this.emiter.dispatch('after', this.choosen)
+    if (this.choosen) {
+      this.choosen.choosen && this.choosen.choosen()
+    }
+    this.emiter.dispatch('afterChoose', this.choosen)
+  }
+
+  deleteChoose () {
+    if (this.choosen) {
+      this.choosen.clearUp()
+    }
   }
 }

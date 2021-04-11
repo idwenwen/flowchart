@@ -8,6 +8,7 @@ import GLOBAL from './global'
 
 let origin = null
 let hasMoving = false
+let isHolding = false
 const MOVING_FUNC = throttle(function (m, pos) {
   const x = pos[0] - origin[0]
   const y = pos[1] - origin[1]
@@ -16,43 +17,55 @@ const MOVING_FUNC = throttle(function (m, pos) {
   })
   origin = pos
 }, 50)
+
 const preEvents = {
   mousedown (eve) {
+    isHolding = true
     origin = getPos(eve, GLOBAL.globalPanel.getOrigin())
   },
   mousemove (eve) {
-    hasMoving = true
-    const l = GLOBAL.linking.linking
-    const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
-    if (l) {
-      l.changing(pos)
-    }
-    const m = GLOBAL.moving.getMove()
-    if (m) {
-      MOVING_FUNC(m, pos)
-      m.lastStatus = 'moving'
+    if (isHolding) {
+      hasMoving = true
+      const l = GLOBAL.linking.linking
+      const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
+      if (l) {
+        l.changing(pos)
+      }
+      const m = GLOBAL.moving.getMove()
+      if (m) {
+        MOVING_FUNC(m, pos)
+        m.lastStatus = 'moving'
+      }
     }
   },
   mouseup (eve) {
-    const l = GLOBAL.linking.linking
-    const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
-    if (l) {
-      GLOBAL.createConnection(pos)
+    if (isHolding) {
+      const l = GLOBAL.linking.linking
+      const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
+      if (l) {
+        GLOBAL.createConnection(pos)
+      }
+      const m = GLOBAL.moving.getMove()
+      if (m) {
+        MOVING_FUNC(m, pos)
+        GLOBAL.moving.setMove()
+      }
     }
-    const m = GLOBAL.moving.getMove()
-    if (m) {
-      MOVING_FUNC(m, pos)
-      GLOBAL.moving.setMove()
-    }
-  },
-  mouseout (eve) {
-
+    isHolding = false
   },
   click (eve) {
     // 点击了空白处，所以无选中
     eve.stopPropagation()
     if (!hasMoving) {
       GLOBAL.choosen.choose(GLOBAL.belongTo(getPos(eve)) || null)
+    }
+    hasMoving = false
+  },
+  keydown (eve) {
+    debugger
+    const keyCode = eve.keyCode
+    if (keyCode === 8 || keyCode === 27 || keyCode === 46) {
+      GLOBAL.choosen.deleteChoose()
     }
   }
 }
@@ -70,6 +83,9 @@ export default class BackendPanel {
   render () {
     this.panel = new Panel({
       id: '_global_canvas',
+      attrs: {
+        tabindex: '-1'
+      },
       styles: {
         width: '100%',
         height: '100%',

@@ -100,7 +100,7 @@ export default class ContentBody extends Tree {
             const progressRes = originProgress + (1 - originProgress) * progress
             this.progress = progress >= 1 ? 1 : progressRes
             if (progress >= 1) _t.progressing = 1
-            const target = contentColor(this.choosed, status, this.disable)
+            const target = contentColor(this.choose, status, this.disable)
             this.color = Action.get('color')(progress, originColor, target)
           },
           time: 500
@@ -130,7 +130,7 @@ export default class ContentBody extends Tree {
         return this.radius
       },
       color () {
-        return contentColor(this.choosed, this.status, this.disable)
+        return contentColor(this.choose, this.status, this.disable)
       },
       center () {
         return this.center

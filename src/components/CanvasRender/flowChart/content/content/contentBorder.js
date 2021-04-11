@@ -39,7 +39,7 @@ export default class ContentBorder extends Tree {
         {
           variation (progress, status) {
             if (!originColor) originColor = this.color
-            const target = borderStyle(this.choosed, status, this.disable)
+            const target = borderStyle(this.choose, status, this.disable)
             this.color = Action.get('color')(progress, originColor, target)
           },
           time: 500
@@ -67,7 +67,7 @@ export default class ContentBorder extends Tree {
           return this.radius
         },
         color () {
-          return borderStyle(this.choosed, this.status, this.disable)
+          return borderStyle(this.choose, this.status, this.disable)
         },
         center () {
           return this.center

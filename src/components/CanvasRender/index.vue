@@ -27,18 +27,21 @@ export default {
       index: 0,
 
       defaultList: [{
+        id: 'comp_0',
         type: 'binning',
         choose: false,
         disable: false,
         status: 'success',
         role: 'guest'
       }, {
+        id: 'comp_1',
         type: 'reader',
         choose: false,
         disable: false,
         role: 'guest',
         status: 'success'
       }, {
+        id: 'comp_2',
         type: 'secureboost',
         choose: false,
         disable: false,

@@ -9,6 +9,7 @@ import GLOBAL from '../env/global'
 import SubCompManager from '../subContent'
 import { getPos } from '../utils'
 import UUID from '../../tools/uuid'
+import ICONTip from '../subContent/iconTip'
 
 export const ComponentsStatus = {
   unrun: 'unrun|waiting',
@@ -142,7 +143,7 @@ export default class Component extends Tree {
             : radius
         return radius
       },
-      choosed () {
+      choose () {
         return _t.choose
       },
       status () {
@@ -195,23 +196,24 @@ export default class Component extends Tree {
         if (status === ComponentsStatus.running) {
           _t.figure.dispatchAnimate('loading')
         }
-        let type = null
-        if (this.status === ComponentsStatus.fail) {
-          type = this.disable ? 'disableError' : 'error'
-        } else if (this.status === ComponentsStatus.success) {
-          type = this.disable ? 'disableComplete' : 'complete'
-        }
         // 添加相关的sub内容
-        if (type) {
-          _t.addSubsIcon(type)
-        } else {
-          _t.removeStatusIcon('statusIcon')
+        if (status === ComponentsStatus.success || status === ComponentsStatus.fail) {
+          const icon = new ICONTip(_t, status) // 添加新的ICON
+          _t.addSub(icon.uuid, icon)
         }
 
         _t.isChanging = false
         if (_t.statusChangeList.length > 0) {
-          _t.figure.dispatchAnimate('startChangeStatus', _t.statusChangeList.splice(0, 1))
+          _t.figure.dispatchEvents('isChangingStatus', _t.statusChangeList.splice(0, 1)[0])
         }
+      },
+      isChangingStatus (status) {
+        _t.removeICON() // 状态改变移除原有的ICON
+        if (_t.status === ComponentsStatus.running) {
+          _t.figure.endAnimate('loading')
+        }
+        // 组件的toStatus方法
+        _t.figure.dispatchAnimate('changeStatus', status)
       },
       // 状态修改过程启动
       startChangeStatus (status) {
@@ -220,11 +222,7 @@ export default class Component extends Tree {
         if (!_t.isChanging) {
         // 如果状态不相同则转变当前状态。
           _t.isChanging = true
-          if (_t.status === ComponentsStatus.running) {
-            _t.figure.endAnimate('loading')
-          }
-          // 组件的toStatus方法
-          _t.figure.dispatchAnimate('changeStatus', res)
+          _t.figure.dispatchEvents('isChangingStatus', _t.statusChangeList.splice(0, 1)[0])
         }
       }
     }
@@ -240,7 +238,8 @@ export default class Component extends Tree {
         const pos = getPos(eve)
         const mid = _t.checkPositionForPort(pos)
         if (mid) {
-          mid.linkFrom(pos) // 创建连接,结果表示当前连接是否成功
+          mid.linkFrom(pos) // 创建连接,结果表示当前连接创建是否成功
+          _t.lastStatus = 'linking'
         } else {
           // 如果当前没有连接的话，设置当前内容为moving
           GLOBAL.moving.setMove(_t)
@@ -248,7 +247,6 @@ export default class Component extends Tree {
       },
       'click': function (eve) {
         // 当前内容被选中
-        debugger
         if (_t.lastStatus !== 'moving' && _t.figure.isPointInFigure(getPos(eve))) {
           GLOBAL.choosen.choose(_t)
           eve.stopPropagation()
@@ -258,6 +256,7 @@ export default class Component extends Tree {
     }
   }
 
+  // 渲染函数。
   toRender (width, height, point, status) {
     const childList = [
       new Content(),
@@ -282,7 +281,7 @@ export default class Component extends Tree {
       })()
     })
     GLOBAL.globalPanel.append(this.panel) // 全局环境下添加当前的展示内容。
-    this.figure.dispatchEvents('startChangeStatus', status)
+    this.changeStatus(status)
     return this.figure
   }
 
@@ -295,11 +294,11 @@ export default class Component extends Tree {
     }
   }
 
-  choose () {
-    this.figure.dispatchEvents('choosen')
+  choosen () {
+    this.figure.dispatchEvents('choose')
   }
-  unchoose () {
-    this.figure.dispatchEvents('unchoosen')
+  unchoosen () {
+    this.figure.dispatchEvents('unchoose')
   }
 
   addSub (name, subComp) {
@@ -310,12 +309,23 @@ export default class Component extends Tree {
     const sub = this.subs.remove(name)
     this.panel.remove(sub.panel)
   }
+  removeICON () {
+    this.subs.filter(function (key) {
+      return !!key.match(/ICONTip/)
+    })
+  }
 
   addLinkOut (linking) {
     this.linkOut.add(linking)
   }
+  removeLinkOut (linking) {
+    this.linkOut.delete(linking)
+  }
   addLinkInto (linking) {
     this.linkInto.add(linking)
+  }
+  removeLinkInto (linking) {
+    this.linking.delete(linking)
   }
 
   // 当前panel移位
@@ -334,6 +344,7 @@ export default class Component extends Tree {
     }
   }
 
+  // 清除当前对象的数据内容。
   clearUp () {
     // 清除当前的展示内容
     ([...(Array.from(this.linkInto)), ...(Array.from(this.linkOut))]).forEach(val => {
@@ -344,6 +355,7 @@ export default class Component extends Tree {
     GLOBAL.globalComp.delete(this.id)
   }
 
+  // 获取与当前组件关联的上层组件内容。
   getConnection () {
     const getTopper = function (node) {
       const willNotHint = []
@@ -358,5 +370,23 @@ export default class Component extends Tree {
       return Array.from(new Set(final))
     }
     return getTopper(this)
+  }
+
+  // 状态修改函数。
+  changeStatus (status) {
+    this.figure.dispatchEvents('startChangeStatus', status)
+  }
+  getInformation () {
+    const result = {
+      id: this.id,
+      type: this.type, // 组件类型
+      status: this.status, // 当前组件的状态
+      disable: this.disable,
+
+      name: this.name, // 当前组件名称
+      role: this.role // 当前组件针对的角色
+    }
+    result.position = this.panel.attrs.point
+    return result
   }
 }

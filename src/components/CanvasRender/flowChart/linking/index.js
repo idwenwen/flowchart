@@ -194,11 +194,11 @@ class Linking extends Tree {
   }
 
   // 选中事件触发
-  choose () {
-    this.diagram.dispatchEvents('choose')
+  choosen () {
+    this.figure.dispatchEvents('choose')
   }
-  unchoose () {
-    this.diagram.dispatchEvents('unchoose')
+  unchoosen () {
+    this.figure.dispatchEvents('unchoose')
   }
 
   linkStart () {
@@ -212,6 +212,17 @@ class Linking extends Tree {
   clearUp () {
     // 清除异己解绑当前的数据关系
     GLOBAL.globalPanel.remove(this.panel)
+    GLOBAL.globalLinking.delete(this.uuid)
+    if (this.from) {
+      this.from.closeConnect(this)
+    }
+    if (this.end) {
+      this.end.closeConnect(this)
+    }
+  }
+
+  getInformation () {
+    const result = []
   }
 }
 

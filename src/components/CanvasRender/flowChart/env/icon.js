@@ -1,15 +1,23 @@
 export default class Icons {
   constructor (setting) {
+    setting = {
+      complete: require('../icon/complete.svg'),
+      disableComplete: require('../icon/disable_complete.svg'),
+      error: require('../icon/error.svg'),
+      disableError: require('../icon/disable_error.svg'),
+      multData: require('../icon/mult_data.svg'),
+      multModel: require('../icon/mult_model.svg')
+    }
     this.icons = new Map()
+    if (setting) {
+      this.loadImages(setting)
+    }
   }
 
   loadImage (key, url) {
-    const _t = this
     const img = new Image()
-    img.onload = function () {
-      _t.icons.set(key, img)
-    }
     img.src = url
+    this.icons.set(key, img)
   }
 
   loadImages (setting) {

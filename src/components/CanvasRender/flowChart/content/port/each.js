@@ -157,4 +157,14 @@ export default class Port extends Tree {
         target
       )
   }
+
+  // 关闭当前的连接。
+  closeConnect (linking) {
+    this.hasConnect = false // 设置当前的关联情况为false
+    if (this.type.match(/output/)) {
+      this.root().removeLinkOut(linking)
+    } else if (this.type.match(/input/)) {
+      this.root().removeLinkInto(linking)
+    }
+  }
 }

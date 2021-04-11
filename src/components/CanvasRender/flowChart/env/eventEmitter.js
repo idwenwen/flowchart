@@ -13,14 +13,18 @@ export class EventEmitter {
   }
 
   addEvent (type, eve) {
-    const list = this.events.get(type) || []
-    if (isFunction) list.push(eve)
-    else if (Array.isArray(eve)) list.push(...eve)
-    else {
-      record('TypedError',
-        'Need type as function or Array<Function>')
+    try {
+      const list = this.events.get(type) || []
+      if (isFunction) list.push(eve)
+      else if (Array.isArray(eve)) list.push(...eve)
+      else {
+        record('TypedError',
+          'Need type as function or Array<Function>')
+      }
+      this.events.set(type, list)
+    } catch (err) {
+      void 0
     }
-    this.events.set(type, list)
   }
   addEvents (obj) {
     for (const key in obj) {
@@ -41,16 +45,20 @@ export class EventEmitter {
   }
 
   dispatch (type, ...rest) {
-    const list = this.events.get(type)
-    if (Array.isArray(list) && list.length > 0) {
-      list.forEach(val => {
-        if (this.context) {
-          val.call(this.context, ...rest)
-        }
-      })
-    } else {
-      record('NullStackException',
-        'There has no events pre setting into emitter')
+    try {
+      const list = this.events.get(type)
+      if (Array.isArray(list) && list.length > 0) {
+        list.forEach(val => {
+          if (this.context) {
+            val.call(this.context, ...rest)
+          }
+        })
+      } else {
+        record('NullStackException',
+          'There has no events pre setting into emitter')
+      }
+    } catch (err) {
+      void 0
     }
   }
 
@@ -92,6 +100,7 @@ export class EventEmitterForDom extends EventEmitter {
     if (!this.listener.get(type) && this.events.get(type)) {
       const _t = this
       const listener = function (eve) {
+        console.log(type)
         _t.events.get(type).forEach(val => {
           val(eve)
         })
@@ -118,16 +127,20 @@ export class EventEmitterForDom extends EventEmitter {
   }
 
   dispatch (type) {
-    let listener = this.listener.get(type)
-    if (!listener) {
-      this._bindEvents(type)
-      listener = this.listener.get(type)
+    try {
+      let listener = this.listener.get(type)
+      if (!listener) {
+        this._bindEvents(type)
+        listener = this.listener.get(type)
+      }
+      if (!listener) {
+        record('MsgError',
+          'There has no events register in EventEmitter typed ' + type)
+      }
+      // 如果有parameter参数的话，则触发，否则则是当前dom的原生事件。
+      if (listener.parameter) { this.dom.dispatch(listener.parameter) }
+    } catch (err) {
+      void 0
     }
-    if (!listener) {
-      record('MsgError',
-        'There has no events register in EventEmitter typed ' + type)
-    }
-    // 如果有parameter参数的话，则触发，否则则是当前dom的原生事件。
-    if (listener.parameter) { this.dom.dispatch(listener.parameter) }
   }
 }
