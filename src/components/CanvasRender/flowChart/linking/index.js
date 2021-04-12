@@ -220,10 +220,6 @@ class Linking extends Tree {
       this.end.closeConnect(this)
     }
   }
-
-  getInformation () {
-    const result = []
-  }
 }
 
 export default Linking

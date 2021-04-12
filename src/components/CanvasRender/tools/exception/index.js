@@ -10,7 +10,7 @@ export function record (alias, msg, cache = false, level = 'info') {
       }
       throw exception
     } catch (err) {
-      console.error(err)
+      // console.error(err)
       throw err
     }
   }

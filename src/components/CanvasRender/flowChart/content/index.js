@@ -188,6 +188,12 @@ export default class Component extends Tree {
         _t.disable = false
         this.disable = false
       },
+      toppest () {
+        _t.panel.styles['z-index'] = 10
+      },
+      originLevel () {
+        _t.panel.styles['z-index'] = 2
+      },
 
       // 最终状态定格
       endChangeStatus (status) {
@@ -325,7 +331,7 @@ export default class Component extends Tree {
     this.linkInto.add(linking)
   }
   removeLinkInto (linking) {
-    this.linking.delete(linking)
+    this.linkInto.delete(linking)
   }
 
   // 当前panel移位
@@ -384,9 +390,17 @@ export default class Component extends Tree {
       disable: this.disable,
 
       name: this.name, // 当前组件名称
-      role: this.role // 当前组件针对的角色
+      role: this.role, // 当前组件针对的角色
+      point: this.panel.attrs.point,
+      width: this.panel.attrs.width,
+      height: this.panel.attrs.height,
+      single: this.single
     }
-    result.position = this.panel.attrs.point
+
     return result
+  }
+
+  getPort (i, type, output) {
+    return this.getChildren()[1].checkHint(i, type, output)
   }
 }

@@ -86,14 +86,6 @@ export default class ContentBody extends Tree {
     return toChain({
       list: [
         {
-          variation (progress) {
-            if (this.status === ComponentsStatus.running) {
-              this.origin.animateEnd('loading')
-            }
-          },
-          time: 0
-        },
-        {
           variation (progress, status) {
             if (!originProgress) originProgress = this.progress
             if (!originColor) originColor = this.color

@@ -57,12 +57,11 @@ const preEvents = {
     // 点击了空白处，所以无选中
     eve.stopPropagation()
     if (!hasMoving) {
-      GLOBAL.choosen.choose(GLOBAL.belongTo(getPos(eve)) || null)
+      GLOBAL.choosen.choose(GLOBAL.belongTo(getPos(eve, GLOBAL.globalPanel.getOrigin())) || null)
     }
     hasMoving = false
   },
   keydown (eve) {
-    debugger
     const keyCode = eve.keyCode
     if (keyCode === 8 || keyCode === 27 || keyCode === 46) {
       GLOBAL.choosen.deleteChoose()

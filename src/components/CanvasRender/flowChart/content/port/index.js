@@ -99,4 +99,13 @@ export default class ContentPorts extends Tree {
       val.linkHint(type)
     }
   }
+
+  checkHint (i, type, output = false) {
+    for (const val of this.getChildren()) {
+      const tip = val.checkWhichPort(i, type, output)
+      if (tip) {
+        return tip
+      }
+    }
+  }
 }

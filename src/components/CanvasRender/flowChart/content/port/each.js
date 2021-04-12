@@ -6,6 +6,7 @@ import { toFigure } from '../../../core/figure'
 import { compareToPos } from '../../utils'
 import LinkHint from '../../subContent/hint'
 import GLOBAL from '../../env/global'
+import { isNil } from 'lodash'
 
 function portColor (disable, status, type) {
   return disable
@@ -148,6 +149,7 @@ export default class Port extends Tree {
     return false
   }
 
+  // 获取相关的位置信息内容
   currentPosition (target) {
     return !target
       ? this.figure.data.cache.center
@@ -161,10 +163,32 @@ export default class Port extends Tree {
   // 关闭当前的连接。
   closeConnect (linking) {
     this.hasConnect = false // 设置当前的关联情况为false
-    if (this.type.match(/output/)) {
+    if (this.type.match(/output/i)) {
       this.root().removeLinkOut(linking)
-    } else if (this.type.match(/input/)) {
+    } else if (this.type.match(/input/i)) {
       this.root().removeLinkInto(linking)
+    }
+  }
+
+  // 获取当前port信息的排位
+  getWhichPort () {
+    const index = this.name.split('|')[1].split('_')[0]
+    return parseInt(index)
+  }
+  // 核对当前节点是否符合节点情况。
+  checkWhichPort (i, type, output) {
+    const infos = this.name.split('|')
+    if (!isNil(i)) {
+      const detail = infos[1].split('_')
+      if (parseInt(detail[0]) === i) {
+        if (type && infos[0] !== type) {
+          return false
+        }
+        if (output && !detail[1].match(output ? /output/i : /input/i)) {
+          return false
+        }
+        return this
+      }
     }
   }
 }

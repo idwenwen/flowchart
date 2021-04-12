@@ -5,6 +5,10 @@
       class="canvas-panel"
     />
     <button @click="addOne">addOne</button>
+    <button @click="getInfo">getInfo</button>
+    <button @click="clear">clear</button>
+    <button @click="rebuild">rebuild</button>
+    <button @click="changeStatus">status</button>
   </div>
 </template>
 
@@ -47,32 +51,51 @@ export default {
         disable: false,
         role: 'guest',
         status: 'success'
-      }]
+      }],
+
+      statusChange: [
+        {
+          comp_0: 'running'
+        },
+        {
+          comp_0: 'success'
+        }
+      ],
+      statusIndex: 0
     }
   },
 
   mounted () {
     this.$nextTick(() => {
-      this.chartFlow = ChartFlow(document.getElementById('CanvasComponent'), {
-        complete: '@/compoents/CanvasRender/flowChart/icon/complete.svg',
-        disableComplete: '@/compoents/CanvasRender/flowChart/icon/disable_complete.svg',
-        error: '@/compoents/CanvasRender/flowChart/icon/error.svg',
-        disableError: '@/compoents/CanvasRender/flowChart/icon/disable_error.svg',
-        multData: '@/compoents/CanvasRender/flowChart/icon/mult_data.svg',
-        multModel: '@/compoents/CanvasRender/flowChart/icon/mult_model.svg'
-      })
+      this.chartFlow = new ChartFlow(document.getElementById('CanvasComponent'))
     })
   },
 
   methods: {
     addComponent (data) {
-      this.chartFlow.appendComp(data)
+      this.chartFlow.append(data)
     },
     addOne () {
       const set = this.defaultList[this.index]
       if (set) {
         this.addComponent(set)
         this.index++
+      }
+    },
+    getInfo () {
+      return JSON.stringify(this.chartFlow.getInfo())
+    },
+    clear () {
+      this.chartFlow.clear()
+    },
+    rebuild (eve, setting) {
+      const defSet = [{'id': 'comp_0', 'type': 'binning', 'status': 'success|complete', 'disable': false, 'name': 'binning_0', 'role': 'guest', 'point': [116, 152], 'width': 240, 'height': 55, 'single': false, 'dependency': {'modelOutput': [{'componentName': 'secureboost_0', 'componentId': 'comp_2', 'from': ['model', 0], 'to': ['model', 0]}], 'dataOutput': [{'componentName': 'secureboost_0', 'componentId': 'comp_2', 'from': ['data', 0], 'to': ['data', 0]}]}}, {'id': 'comp_1', 'type': 'reader', 'status': 'success|complete', 'disable': false, 'name': 'reader_0', 'role': 'guest', 'point': [191, 33], 'width': 240, 'height': 55, 'single': false, 'dependency': {'dataOutput': [{'componentName': 'binning_0', 'componentId': 'comp_0', 'from': ['data', 0], 'to': ['data', 0]}]}}, {'id': 'comp_2', 'type': 'secureboost', 'status': 'success|complete', 'disable': false, 'name': 'secureboost_0', 'role': 'guest', 'point': [173, 284], 'width': 240, 'height': 55, 'single': false}]
+      this.chartFlow.rebuild(setting || defSet)
+    },
+    changeStatus () {
+      if (this.statusChange[this.statusIndex]) {
+        this.chartFlow.changeStatus(this.statusChange[this.statusIndex])
+        this.statusIndex += 1
       }
     }
   }

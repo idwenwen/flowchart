@@ -201,10 +201,15 @@ class Panel {
     }
   }
   remove (dom) {
-    if (dom instanceof Panel) {
-      this.domContainer.removeChild(dom.domContainer)
-    } else {
-      this.domContainer.removeChild(dom)
+    try {
+      if (dom instanceof Panel) {
+        this.domContainer.removeChild(dom.domContainer)
+      } else {
+        this.domContainer.removeChild(dom)
+      }
+    } catch (err) {
+      console.error(err)
+      void 0
     }
   }
 

@@ -1,8 +1,8 @@
+import { record } from '../../tools/exception'
 import Component from '../content'
 import Linking from '../linking'
 import { compareToPos } from '../utils'
 import Choosen from './choosen'
-import Connection from './connection'
 import { EventEmitter } from './eventEmitter'
 import Icons from './icon'
 import LinkingManager from './linking'
@@ -15,7 +15,6 @@ export class Global extends EventEmitter {
     this.choosen = new Choosen(this)
     this.linking = new LinkingManager()
     this.moving = new Moving()
-    this.connection = new Connection()
 
     this.globalIcons = new Icons()
     this.globalComp = new Map()
@@ -127,8 +126,8 @@ export class Global extends EventEmitter {
   createConnectionDir (startPos, endPos, from, end) {
     // 直接连线当前内容。
     const l = new Linking(startPos, endPos, from, end)
-    from.addLinkOut(l)
-    end.addLinkInto(l)
+    from.linkOut(l)
+    end.linkInto(l)
     l.linkEnd()
   }
   // 创建连接关联提示符。
@@ -235,15 +234,76 @@ export class Global extends EventEmitter {
 
   // 清除当前画布上面的内容
   clearCanvas () {
+    for (const val of this.globalComp) {
+      val[1].clearUp()
+    }
+    for (const val of this.globalLinking) {
+      val[1].clearUp()
+    }
   }
+  // 获取当前的组件信息
   getInformation () {
     const list = []
+    // 所有comp内容的获取。
     for (const val of this.globalComp) {
       list.push(val[1].getInformation())
     }
-    for (const val of this.globalLinking) {
+    // 遍历所有linking内容。
+    for (const item of this.globalLinking) {
       // 添加linking内容
+      const output = item[1].from.type.match(/data/) ? 'data' : 'model'
+      const fromId = item[1].from.root()
+      const endId = item[1].end.root()
+      const compInfo = list.find((val) => val.id === fromId.id) // list之中查找到相关的组件内容。
+      if (!compInfo.dependency) compInfo.dependency = {}
+      if (!compInfo.dependency[output + 'Output']) compInfo.dependency[output + 'Output'] = []
+      compInfo.dependency[output + 'Output'].push({
+        componentName: item[1].end.root().name,
+        componentId: endId.id,
+        from: [output, item[1].from.getWhichPort()],
+        to: [output, item[1].end.getWhichPort()]
+      })
     }
+    return list
+  }
+  // 依据配置添加组件内容
+  setInformation (setting) {
+    try {
+      this.appendComps(setting)
+      for (const val of setting) {
+        const dep = val.dependency
+        // 获取上层组件内容
+        const fromComp = this.globalComp.get(val.id)
+
+        // 如果有相关依赖表示有连接出现
+        if (dep) {
+          const list = []
+          if (dep.dataOutput) list.push(...dep.dataOutput)
+          if (dep.modelOutput) list.push(...dep.modelOutput)
+          for (const dataO of list) {
+            // 获取下层组件
+            const endComp = this.globalComp.get(dataO.componentId)
+            if (!endComp) {
+              record('DoNotExistException',
+                'There has no component named ' + dataO.componentName)
+            }
+            // 获取相关的两个port信息
+            const endPort = endComp.getPort(dataO.to[1], dataO.to[0], false)
+            const fromPort = fromComp.getPort(dataO.from[1], dataO.from[0], true)
+            const startPos = fromPort.currentPosition(this.globalPanel.getOrigin())
+            const endPos = endPort.currentPosition(this.globalPanel.getOrigin())
+            this.createConnectionDir(startPos, endPos, fromPort, endPort)
+          }
+        }
+      }
+    } catch (err) {
+      void 0
+    }
+  }
+  // 重新构建当前图片内容。
+  rebuild (setting) {
+    this.clearCanvas()
+    this.setInformation(setting)
   }
 }
 

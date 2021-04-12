@@ -100,7 +100,6 @@ export class EventEmitterForDom extends EventEmitter {
     if (!this.listener.get(type) && this.events.get(type)) {
       const _t = this
       const listener = function (eve) {
-        console.log(type)
         _t.events.get(type).forEach(val => {
           val(eve)
         })

@@ -128,10 +128,11 @@ export default class LinkHint extends Tree {
   }
 
   clearUp () {
+    this.disRender()
     for (const val of this.getChildren()) {
       val.clearUp()
     }
-    this.disRender()
+    this.main.root().removeSub(this.id)
     GLOBAL.removeHint(this.id)
   }
 
