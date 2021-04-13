@@ -9,6 +9,7 @@ import GLOBAL from './global'
 let origin = null
 let hasMoving = false
 let isHolding = false
+let sensible = true
 const MOVING_FUNC = throttle(function (m, pos) {
   const x = pos[0] - origin[0]
   const y = pos[1] - origin[1]
@@ -17,6 +18,14 @@ const MOVING_FUNC = throttle(function (m, pos) {
   })
   origin = pos
 }, 50)
+// 对于当前移位的敏感性进行干预。
+const SENSIBILITY = (pos) => {
+  if (origin && sensible) {
+    if (Math.abs(pos[0] - origin[0]) || Math.abs(pos[1] - origin[1])) {
+      sensible = false
+    }
+  }
+}
 
 const preEvents = {
   mousedown (eve) {
@@ -25,16 +34,17 @@ const preEvents = {
   },
   mousemove (eve) {
     if (isHolding) {
-      hasMoving = true
       const l = GLOBAL.linking.linking
       const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
       if (l) {
         l.changing(pos)
+        hasMoving = true
       }
       const m = GLOBAL.moving.getMove()
       if (m) {
         MOVING_FUNC(m, pos)
         m.lastStatus = 'moving'
+        hasMoving = true
       }
     }
   },
@@ -42,6 +52,7 @@ const preEvents = {
     if (isHolding) {
       const l = GLOBAL.linking.linking
       const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
+      SENSIBILITY(pos)
       if (l) {
         GLOBAL.createConnection(pos)
       }
@@ -60,6 +71,7 @@ const preEvents = {
       GLOBAL.choosen.choose(GLOBAL.belongTo(getPos(eve, GLOBAL.globalPanel.getOrigin())) || null)
     }
     hasMoving = false
+    sensible = true
   },
   keydown (eve) {
     const keyCode = eve.keyCode

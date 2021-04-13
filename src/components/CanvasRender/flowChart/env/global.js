@@ -138,35 +138,35 @@ export class Global extends EventEmitter {
   }
 
   // 添加组件信息内容
-  appendComp (compSetting) {
-    this.dispatch('beforeAddCompnent')
+  appendComp (compSetting, trigger = true) {
+    if (trigger) this.dispatch('beforeAddCompnent')
     const comp = new Component(compSetting)
-    this.dispatch('afterAddComponent', comp)
+    if (trigger) this.dispatch('afterAddComponent', comp)
     return comp
   }
   appendComps (compSettings) {
     this.dispatch('beforeAddComponents')
     for (const val of compSettings) {
-      this.appendComp(val)
+      this.appendComp(val, false)
     }
     this.dispatch('afterAddComponents')
   }
   // 删除组件内容
-  deleteComp (id) {
+  deleteComp (id, trigger = true) {
     let comp = id
     if (!comp.toString().match('object')) {
       comp = this.globalComp.get(id)
     }
     if (comp) {
-      this.dispatch('beforeDeleteComponent')
+      if (trigger) this.dispatch('beforeDeleteComponent')
       comp.clearUp()
-      this.dispatch('afterDeleteComponent')
+      if (trigger) this.dispatch('afterDeleteComponent')
     }
   }
   deleteComps (ids) {
     this.dispatch('beforeDeleteComponents')
     for (const val of ids) {
-      this.deleteComp(val)
+      this.deleteComp(val, false)
     }
     this.dispatch('afterDeleteComponents')
   }
@@ -180,6 +180,7 @@ export class Global extends EventEmitter {
     if (res) {
       res.clearUp()
     }
+    this.dispatch('afterDeleteLink')
   }
 
   // 设置ICON信息
@@ -215,23 +216,22 @@ export class Global extends EventEmitter {
   }
 
   // 修改特定的组件的状态。
-  changeStatusForComp (id, status) {
+  changeStatusForComp (id, status, trigger = true) {
     const comp = this.globalComp.get(id)
     if (comp) {
-      this.dispatch('beforeComponentChangeStatus', comp)
+      if (trigger) this.dispatch('beforeComponentChangeStatus', comp)
       comp.changeStatus(status)
-      this.dispatch('afterComponentChangeStatus', comp)
+      if (trigger) this.dispatch('afterComponentChangeStatus', comp)
     }
   }
   // 为多个组件修改状态。
   changeStatusForComps (setting) {
     this.dispatch('beforeCompoentsChangeStatus')
     for (const key in setting) {
-      this.changeStatusForComp(key, setting[key])
+      this.changeStatusForComp(key, setting[key], false)
     }
     this.dispatch('afterCompoentsChangeStatus', this.globalComp)
   }
-
   // 清除当前画布上面的内容
   clearCanvas () {
     for (const val of this.globalComp) {

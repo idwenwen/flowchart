@@ -150,6 +150,8 @@ const hasNoModel = [
   'scorecard'
 ]
 
+const hasMultipeModelInput = ['secureboost']
+
 const hasNoModelInput = ['statistics', 'psi']
 
 function getModelInput (type, _allSignlePort = false) {
@@ -158,6 +160,7 @@ function getModelInput (type, _allSignlePort = false) {
   else if (match(hasNoModelInput, type)) return res
   else {
     res.push({
+      multiple: !!match(hasMultipeModelInput, type),
       name: 'model|0_Input',
       tip: 'Model Input',
       type: portType.ModelInput

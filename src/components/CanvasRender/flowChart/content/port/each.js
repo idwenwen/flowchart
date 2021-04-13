@@ -21,9 +21,9 @@ function portColor (disable, status, type) {
 function getImage (multiple, type) {
   if (multiple) {
     if (type.toLowerCase().match('data')) {
-      return GLOBAL.getIcons('multData')
+      return GLOBAL.globalIcons.getIcon('multData')
     } else {
-      return GLOBAL.getIcons('multModel')
+      return GLOBAL.globalIcons.getIcon('multModel')
     }
   }
   return null

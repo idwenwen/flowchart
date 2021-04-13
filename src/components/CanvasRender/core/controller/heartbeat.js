@@ -16,6 +16,7 @@ class HeartBeat {
 
   constructor () {
     this.running = false
+    this.templateActions = new Map()
     this.runningActions = new Map() // 运行列表内容
     this.pausingActions = new Map() // 暂停列表
     this.middleWare = new Middleware()
@@ -29,7 +30,7 @@ class HeartBeat {
   play (action, ...meta) {
     const player = action.act(...meta)
     let name = action.name // 获取当前动作名称，具体需要操作的动作需要给定明确的名称。
-    this.runningActions.set(name, player)
+    this.templateActions.set(name, player)
     this.trigger()
   }
 
@@ -42,7 +43,7 @@ class HeartBeat {
       const res = this.runningActions.get(name)
       if (res) {
       // 将running之中的动作放置到
-        this.runningActions.delete(name)
+        this.templateActions.delete(name)
         this.pausingActions.set(name, res)
         return true
       } else {
@@ -63,7 +64,7 @@ class HeartBeat {
       const res = this.pausingActions.get(name)
       if (res) {
         this.pausingActions.delete(name)
-        this.runningActions.set(name, res)
+        this.templateActions.set(name, res)
         this.trigger() // 新加running内容，判定当前心跳是否启动。
         return true
       } else {
@@ -80,6 +81,7 @@ class HeartBeat {
    * @param {String} name 删除当前动画
    */
   remove (name) {
+    this.templateActions.delete(name)
     this.runningActions.delete(name)
     this.pausingActions.delete(name)
   }
@@ -91,17 +93,16 @@ class HeartBeat {
 
       // 动画的心跳步骤。
       const animateStep = function (timeStep) {
-        const ending = []
+        _t.runningActions = _t.templateActions
+        _t.templateActions = new Map()
         // 遍历当前的运行动画，运行动画并确定是否已经结束
         each(_t.runningActions)((item, key) => {
-          if (!item(timeStep)) ending.push(key) // 运行当前语句内容，并进行内容判定。
-        })
-        // 删除已经结束的动作
-        each(ending)(name => {
-          _t.runningActions.delete(name)
+          if (item(timeStep)) {
+            _t.templateActions.set(key, item)
+          }
         })
         // 通过当前running之中是否还有在播放的帧动作来判别是够需要继续
-        return this.runningActions.size > 0
+        return this.templateActions.size > 0
       }
 
       // 表示当前再运行态。

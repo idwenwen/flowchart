@@ -32,7 +32,7 @@ export default {
 
       defaultList: [{
         id: 'comp_0',
-        type: 'binning',
+        type: 'secureboost',
         choose: false,
         disable: false,
         status: 'success',
@@ -54,6 +54,18 @@ export default {
       }],
 
       statusChange: [
+        {
+          comp_0: 'running'
+        },
+        {
+          comp_0: 'success'
+        },
+        {
+          comp_0: 'unrun'
+        },
+        {
+          comp_0: 'fail'
+        },
         {
           comp_0: 'running'
         },
