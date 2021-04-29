@@ -6,7 +6,10 @@ export const portType = {
 }
 
 function match (str, has) {
-  return str.join('|').search(has) >= 0
+  if (!Array.isArray(str)) {
+    return false
+  }
+  return str.some(val => has.match(val))
 }
 
 const hasNoData = []
@@ -91,19 +94,19 @@ function getDataOutput (type, _allSignlePort = false) {
           name: 'data|0_Output',
           tip: 'Train Data Output',
           type: portType.DataOutput,
-          multiple: false
+          multiple: true
         },
         {
           name: 'data|1_Output',
           tip: 'Validation Data Output',
           type: portType.DataOutput,
-          multiple: false
+          multiple: true
         },
         {
           name: 'data|2_output',
           tip: 'Test Data Output',
           type: portType.DataOutput,
-          multiple: false
+          multiple: true
         }
       ]
     )
@@ -114,13 +117,13 @@ function getDataOutput (type, _allSignlePort = false) {
           name: 'data|0_Output',
           tip: 'Data Output_0',
           type: portType.DataOutput,
-          multiple: false
+          multiple: true
         },
         {
           name: 'data|1_Output',
           tip: 'Data Output_1',
           type: portType.DataOutput,
-          multiple: false
+          multiple: true
         }
       ]
     )
@@ -129,7 +132,7 @@ function getDataOutput (type, _allSignlePort = false) {
       name: 'data|0_Output',
       tip: 'Data Output',
       type: portType.DataOutput,
-      multiple: false
+      multiple: true
     })
   }
   return res
@@ -171,12 +174,12 @@ function getModelInput (type, _allSignlePort = false) {
 
 /** **************************modelOutput**************************/
 
-const hasMultipeModelOutput = ['selection']
+// const hasMultipeModelOutput = ['selection']
 const hasNoModelOutput = []
 
 function getModelOutput (type, _allSignlePort = false) {
   let res = []
-  const multiple = match(hasMultipeModelOutput, type)
+  const multiple = true // match(hasMultipeModelOutput, type)
   if (match(hasNoModel, type)) return res
   else if (match(hasNoModelOutput, type)) return res
   else {

@@ -38,4 +38,8 @@ export default class ChartFlow {
   addEvents (setting) {
     GLOBAL.addEvents(setting)
   }
+
+  choose (comp) {
+    GLOBAL.choosing(comp)
+  }
 }

@@ -46,7 +46,7 @@ export default {
         status: 'success'
       }, {
         id: 'comp_2',
-        type: 'secureboost',
+        type: 'heteroSecureBoost',
         choose: false,
         disable: false,
         role: 'guest',

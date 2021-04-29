@@ -219,21 +219,23 @@ class Figure extends Tree {
             },
             // 在afterDraw生命周期之中判定当前点内容是否在路径之中
             afterDraw: function (ctxx) {
+              if (!result) {
               // 绘制之后判别内容。
-              if (!__t.drawPath || __t.drawPath._origin !== 'icon') {
+                if (!__t.drawPath || __t.drawPath._origin !== 'icon') {
                 // 如果当前内容不是ICON的话。
 
-                result = ctxx.isPointInPath(point[0], point[1])
-              } else {
+                  result = ctxx.isPointInPath(point[0], point[1])
+                } else {
                 // 如果当前的内容是ICON的话。则通过borderBox的方式去比较。
-                const data = __t.data.cache
-                const center = data.center
-                const width = data.width
-                const height = data.height
-                result = point[0] >= (center[0] - width / 2) &&
+                  const data = __t.data.cache
+                  const center = data.center
+                  const width = data.width
+                  const height = data.height
+                  result = point[0] >= (center[0] - width / 2) &&
                   point[0] <= (center[0] + width / 2) &&
                   point[1] >= center[1] - height / 2 &&
                   point[1] <= center[1] + height / 2
+                }
               }
             }
           }

@@ -21,7 +21,7 @@ const MOVING_FUNC = throttle(function (m, pos) {
 // 对于当前移位的敏感性进行干预。
 const SENSIBILITY = (pos) => {
   if (origin && sensible) {
-    if (Math.abs(pos[0] - origin[0]) || Math.abs(pos[1] - origin[1])) {
+    if (Math.abs(pos[0] - origin[0]) >= 10 || Math.abs(pos[1] - origin[1]) >= 10) {
       sensible = false
     }
   }
@@ -36,12 +36,13 @@ const preEvents = {
     if (isHolding) {
       const l = GLOBAL.linking.linking
       const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
+      SENSIBILITY(pos)
       if (l) {
         l.changing(pos)
         hasMoving = true
       }
       const m = GLOBAL.moving.getMove()
-      if (m) {
+      if (m && !sensible) {
         MOVING_FUNC(m, pos)
         m.lastStatus = 'moving'
         hasMoving = true

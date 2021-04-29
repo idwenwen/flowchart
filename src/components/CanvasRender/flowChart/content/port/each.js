@@ -129,7 +129,7 @@ export default class Port extends Tree {
     const _t = this
     this.figure = toFigure({
       data: this.getParameter(),
-      path: this.multiple ? 'icon' : 'rect',
+      path: this.multiple && !this.type.match(/output/i) ? 'icon' : 'rect',
       events: {
         linking (eve, position) {
           _t.linking(this, position)

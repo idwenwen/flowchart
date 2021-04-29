@@ -53,11 +53,23 @@ function matchRole (role) {
 class GlobalNameCheck {
   constructor () {
     this.record = {}
+    this.filter = {}
   }
   getName (type) {
     let index = this.record[type] || 0
     this.record[type] = index + 1
-    return type + '_' + index
+    const name = type + '_' + index
+    if (this.filter[type] && this.filter[type].has(name)) {
+      return this.getName(type)
+    } else {
+      this.setFilter(type, name)
+      return name
+    }
+  }
+  setFilter (type, name) {
+    let list = this.filter[type] || new Set()
+    if (!this.filter[type]) this.filter[type] = list
+    list.add(name)
   }
 }
 const defaultName = new GlobalNameCheck()
@@ -88,6 +100,7 @@ export default class Component extends Tree {
     this.status = matchStatus('unrun')
     this.disable = disable
 
+    if (name) defaultName.setFilter(type, name)
     this.name = name || defaultName.getName(this.type)
     this.role = matchRole(role)
     this.choose = choose
@@ -210,17 +223,18 @@ export default class Component extends Tree {
 
         _t.isChanging = false
         if (_t.statusChangeList.length > 0) {
-          debugger
           _t.figure.dispatchEvents('isChangingStatus', _t.statusChangeList.splice(0, 1)[0])
         }
       },
       isChangingStatus (status) {
-        _t.removeICON() // 状态改变移除原有的ICON
-        if (_t.status === ComponentsStatus.running) {
-          _t.figure.endAnimate('loading')
+        if (_t.status !== status) {
+          _t.removeICON() // 状态改变移除原有的ICON
+          if (_t.status === ComponentsStatus.running) {
+            _t.figure.endAnimate('loading')
+          }
+          // 组件的toStatus方法
+          _t.figure.dispatchAnimate('changeStatus', status)
         }
-        // 组件的toStatus方法
-        _t.figure.dispatchAnimate('changeStatus', status)
       },
       // 状态修改过程启动
       startChangeStatus (status) {
@@ -379,11 +393,25 @@ export default class Component extends Tree {
     return getTopper(this)
   }
 
+  getNextLevel (type) {
+    const list = new Set()
+    for (const val of this.linkOut) {
+      if (val.from.type.match(new RegExp(type, 'i'))) {
+        list.add(val.end.root())
+      }
+    }
+    return Array.from(list)
+  }
+
   // 状态修改函数。
   changeStatus (status) {
     this.figure.dispatchEvents('startChangeStatus', status)
   }
   getInformation () {
+    const center = [
+      this.panel.attrs.point[0] + this.panel.attrs.width / 2,
+      this.panel.attrs.point[1] + this.panel.attrs.height / 2
+    ]
     const result = {
       id: this.id,
       type: this.type, // 组件类型
@@ -392,10 +420,13 @@ export default class Component extends Tree {
 
       name: this.name, // 当前组件名称
       role: this.role, // 当前组件针对的角色
-      point: this.panel.attrs.point,
-      width: this.panel.attrs.width,
+      point: center,
+      width: center,
       height: this.panel.attrs.height,
-      single: this.single
+      single: this.single,
+      dataOutput_count: 0,
+      modelOutput_count: 0,
+      dependency: {}
     }
 
     return result

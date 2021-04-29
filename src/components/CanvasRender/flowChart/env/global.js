@@ -66,7 +66,9 @@ export class Global extends EventEmitter {
   // 创建当前的可用连线
   createLinking (startPoint, endPoint, port) {
     const l = new Linking(startPoint, endPoint)
-    const list = port.root().getConnection()
+    let list = port.root().getConnection()
+    const nextLevel = port.root().getNextLevel(port.type.match(/data/i) ? 'data' : 'model')
+    list = list.concat(...nextLevel)
     // 开始连接
     this.dispatch('linkStart')
     l.linkStart() // 创建连线。
@@ -263,6 +265,7 @@ export class Global extends EventEmitter {
         from: [output, item[1].from.getWhichPort()],
         to: [output, item[1].end.getWhichPort()]
       })
+      compInfo[`${output}Output_count`] += 1
     }
     return list
   }
@@ -304,6 +307,10 @@ export class Global extends EventEmitter {
   rebuild (setting) {
     this.clearCanvas()
     this.setInformation(setting)
+  }
+  // 选择API
+  choosing (comp) {
+    this.choosen.choose(comp)
   }
 }
 
