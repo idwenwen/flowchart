@@ -117,7 +117,7 @@ class Linking extends Tree {
   getPanelEvents () {
     const _t = this
     return {
-      'click': function (eve) {
+      click: function (eve) {
         if (_t.figure.isPointInFigure(getPos(eve))) {
           GLOBAL.choosen.choose(_t)
           eve.stopPropagation()
@@ -128,7 +128,7 @@ class Linking extends Tree {
 
   toRender () {
     this.panel = new PanelManager(
-      Object.assign({}, this.getPanelParameter(), {events: this.getPanelEvents()})
+      Object.assign({}, this.getPanelParameter(), { events: this.getPanelEvents() })
     ).panel
     this.setChildren([
       new Curve()

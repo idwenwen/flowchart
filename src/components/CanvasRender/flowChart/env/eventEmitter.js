@@ -1,10 +1,10 @@
 import { isFunction } from 'lodash'
-import {record} from '../../tools/exception'
+import { record } from '../../tools/exception'
 import { toArray } from '../../tools/iteration'
 
 export class EventEmitter {
   constructor (context) {
-    this.context = context
+    this.contextcontext = context
     this.events = new Map()
   }
 
@@ -49,9 +49,9 @@ export class EventEmitter {
       const list = this.events.get(type)
       if (Array.isArray(list) && list.length > 0) {
         list.forEach(val => {
-          if (this.context) {
-            val.call(this.context, ...rest)
-          }
+          // if (this.context) {
+          val.call(this.context, ...rest)
+          // }
         })
       } else {
         record('NullStackException',

@@ -95,7 +95,7 @@ export default class ICONTip {
 
   toRender () {
     this.panel = new PanelManager(
-      Object.assign({}, this.getPanelParameter(), {events: this.getPanelEvent()})
+      Object.assign({}, this.getPanelParameter(), { events: this.getPanelEvent() })
     ).panel
     this.figure = new Diagram(this.panel, {
       data: this.getParameter(),

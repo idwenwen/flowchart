@@ -69,29 +69,32 @@ export default class LinkHint extends Tree {
           originHeight = null
         },
         time: 0
-      }]})
+      }]
+    })
   }
 
   hiddenAnimate () {
     const _t = this
     let originWidth = null
     let originHeight = null
-    return toChain({list: [{
-      variation (progress) {
-        if (!originWidth) originWidth = this.width
-        if (!originHeight) originHeight = this.height
-        this.width = Action.get('number')(progress, originWidth, 0)
-        this.height = Action.get('number')(progress, originWidth, 0)
-      },
-      time: 200
-    }, {
-      variation (_progress) {
-        originWidth = null
-        originHeight = null
-        _t.clearUp()
-      },
-      time: 0
-    }]})
+    return toChain({
+      list: [{
+        variation (progress) {
+          if (!originWidth) originWidth = this.width
+          if (!originHeight) originHeight = this.height
+          this.width = Action.get('number')(progress, originWidth, 0)
+          this.height = Action.get('number')(progress, originWidth, 0)
+        },
+        time: 200
+      }, {
+        variation (_progress) {
+          originWidth = null
+          originHeight = null
+          _t.clearUp()
+        },
+        time: 0
+      }]
+    })
   }
 
   toRender () {

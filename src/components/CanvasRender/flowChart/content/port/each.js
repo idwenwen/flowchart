@@ -37,7 +37,7 @@ function getPosition (compWidth, compHeight, center, type, len, num) {
 }
 
 export default class Port extends Tree {
-  constructor ({name, type, tip, multiple}) {
+  constructor ({ name, type, tip, multiple }) {
     super()
     this.name = name
     this.type = type

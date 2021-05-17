@@ -1,3 +1,6 @@
+import Linking from '../linking'
+import GLOBAL from './global'
+
 export default class Choosen {
   constructor (main) {
     this.choosen = null
@@ -6,7 +9,7 @@ export default class Choosen {
 
   choose (item) {
     this.emiter.setContext(item)
-    this.emiter.dispatch('beforeChoose', this.choose)
+    this.emiter.dispatch('beforeChoose', this.choosen)
     if (this.choosen) {
       this.choosen.unchoosen && this.choosen.unchoosen()
     }
@@ -19,7 +22,11 @@ export default class Choosen {
 
   deleteChoose () {
     if (this.choosen) {
-      this.choosen.clearUp()
+      if (this.choosen instanceof Linking) {
+        GLOBAL.deleteLink(this.choosen)
+      } else {
+        GLOBAL.deleteComp(this.choosen.id || this.choosen.uuid, true, this.choosen)
+      }
     }
   }
 }

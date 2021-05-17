@@ -85,7 +85,7 @@ class PanelManager extends PanelOperation {
     this.panel = new Panel(
       Object.assign(
         this.getParameter(width, height, point, attrs, style, transform, classes),
-        {events}
+        { events }
       )
     )
     return this.panel

@@ -1,4 +1,4 @@
-import { toRGBA } from '../../../../diagram/tools/extension/color'
+import { toRGBA } from '../../../tools/color'
 import { toFigure } from '../../../core/figure'
 import Tree from '../../../tools/tree'
 import { DATA_PORT_COLOR, MODEL_PORT_COLOR } from './config'

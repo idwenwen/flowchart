@@ -41,7 +41,7 @@ export default class SubIcon extends PanelOperation {
   // 展示当前内容。
   render (width, height, point) {
     const _t = this
-    const panelSetting = new PanelManager().toSetting(width, height, point, {}, {position: 'absolute'})
+    const panelSetting = new PanelManager().toSetting(width, height, point, {}, { position: 'absolute' })
     const diagram = new Diagram(panelSetting, this.toSetting())
     this.diagram = diagram
     this.panelManager = diagram.panel

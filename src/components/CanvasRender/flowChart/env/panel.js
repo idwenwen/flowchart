@@ -67,7 +67,7 @@ const preEvents = {
   },
   click (eve) {
     // 点击了空白处，所以无选中
-    eve.stopPropagation()
+    // eve.stopPropagation()
     if (!hasMoving) {
       GLOBAL.choosen.choose(GLOBAL.belongTo(getPos(eve, GLOBAL.globalPanel.getOrigin())) || null)
     }

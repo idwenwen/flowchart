@@ -61,7 +61,7 @@ class PanelOperation {
     return this.panel.attrs.get('height')
   }
 
-  updated ({position, width, height}) {
+  updated ({ position, width, height }) {
     position && this.setPosition(position)
     width && this.setWidth(width)
     height && this.setHeight(height)

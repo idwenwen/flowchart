@@ -123,7 +123,7 @@ export class Global extends EventEmitter {
     this.linking.clear()
 
     // 连接成功
-    this.dispatch('linkSuccessd')
+    this.dispatch('linkSuccessd', l)
   }
   createConnectionDir (startPos, endPos, from, end) {
     // 直接连线当前内容。
@@ -154,15 +154,15 @@ export class Global extends EventEmitter {
     this.dispatch('afterAddComponents')
   }
   // 删除组件内容
-  deleteComp (id, trigger = true) {
+  deleteComp (id, trigger = true, choosen) {
     let comp = id
     if (!comp.toString().match('object')) {
       comp = this.globalComp.get(id)
     }
     if (comp) {
-      if (trigger) this.dispatch('beforeDeleteComponent')
+      if (trigger) this.dispatch('beforeDeleteComponent', id, choosen)
       comp.clearUp()
-      if (trigger) this.dispatch('afterDeleteComponent')
+      if (trigger) this.dispatch('afterDeleteComponent', id, choosen)
     }
   }
   deleteComps (ids) {
@@ -182,7 +182,7 @@ export class Global extends EventEmitter {
     if (res) {
       res.clearUp()
     }
-    this.dispatch('afterDeleteLink')
+    this.dispatch('afterDeleteLink', link)
   }
 
   // 设置ICON信息
@@ -262,8 +262,8 @@ export class Global extends EventEmitter {
       compInfo.dependency[output + 'Output'].push({
         componentName: item[1].end.root().name,
         componentId: endId.id,
-        from: [output, item[1].from.getWhichPort()],
-        to: [output, item[1].end.getWhichPort()]
+        from: [output, item[1].from.getWhichPort().toString()],
+        to: [output, item[1].end.getWhichPort().toString()]
       })
       compInfo[`${output}Output_count`] += 1
     }
@@ -291,8 +291,8 @@ export class Global extends EventEmitter {
                 'There has no component named ' + dataO.componentName)
             }
             // 获取相关的两个port信息
-            const endPort = endComp.getPort(dataO.to[1], dataO.to[0], false)
-            const fromPort = fromComp.getPort(dataO.from[1], dataO.from[0], true)
+            const endPort = endComp.getPort(parseInt(dataO.to[1]), dataO.to[0], false)
+            const fromPort = fromComp.getPort(parseInt(dataO.from[1]), dataO.from[0], true)
             const startPos = fromPort.currentPosition(this.globalPanel.getOrigin())
             const endPos = endPort.currentPosition(this.globalPanel.getOrigin())
             this.createConnectionDir(startPos, endPos, fromPort, endPort)
@@ -306,6 +306,8 @@ export class Global extends EventEmitter {
   // 重新构建当前图片内容。
   rebuild (setting) {
     this.clearCanvas()
+    // 清除已有的文件内容
+    Component.NamePool.clearRecord()
     this.setInformation(setting)
   }
   // 选择API

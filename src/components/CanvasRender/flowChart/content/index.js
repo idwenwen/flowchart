@@ -3,7 +3,7 @@ import Tree from '../../tools/tree'
 import { each } from '../../tools/iteration'
 import ContentPorts from './port'
 import Content from './content'
-import PanelManager from '../panelManager/index.JS'
+import PanelManager from '../panelManager/index.js'
 import Diagram from '../../core/diagram'
 import GLOBAL from '../env/global'
 import SubCompManager from '../subContent'
@@ -71,32 +71,38 @@ class GlobalNameCheck {
     if (!this.filter[type]) this.filter[type] = list
     list.add(name)
   }
+  clearRecord () {
+    this.record = {}
+  }
 }
 const defaultName = new GlobalNameCheck()
 const TreeID = new UUID(index => `figure_${index}`)
 
 export default class Component extends Tree {
+  static NamePool = defaultName
   constructor (
     {
       id,
       type, // 组件类型
+      module, // 同type
       status = ComponentsStatus.unrun, // 当前组件的状态
-      disable, // 当前组件是否是不需要运行的。
+      disable = false, // 当前组件是否是不需要运行的。
 
       name, // 当前组件名称
-      role, // 当前组件针对的角色
+      role = 'guest', // 当前组件针对的角色
       choose = false, // 当前组件是否被选择
 
       single = false,
 
       width,
       height,
-      point
+      point,
+      position // 同point
     }
   ) {
     super()
     this.id = id || TreeID.get()
-    this.type = type
+    this.type = type || module
     this.status = matchStatus('unrun')
     this.disable = disable
 
@@ -120,7 +126,7 @@ export default class Component extends Tree {
 
     this.figure = null
     this.panel = null
-    this.toRender(width, height, point, status)
+    this.toRender(width, height, point || position, status)
     GLOBAL.registerComp(this.id, this)
   }
 
@@ -253,7 +259,7 @@ export default class Component extends Tree {
   getPanelEvents () {
     const _t = this
     return {
-      'mousedown': function (eve) {
+      mousedown: function (eve) {
         // 记录当前的点击位置
         // 获取当前port的对象
         const pos = getPos(eve)
@@ -266,7 +272,7 @@ export default class Component extends Tree {
           GLOBAL.moving.setMove(_t)
         }
       },
-      'click': function (eve) {
+      click: function (eve) {
         // 当前内容被选中
         if (_t.lastStatus !== 'moving' && _t.figure.isPointInFigure(getPos(eve))) {
           GLOBAL.choosen.choose(_t)
@@ -284,11 +290,8 @@ export default class Component extends Tree {
       new ContentPorts(this.type, this.single, this.role)
     ]
     this.setChildren(childList)
-    this.panel = new PanelManager({
-      width,
-      height,
-      point,
-      events: this.getPanelEvents()}
+    this.panel = new PanelManager(
+      { width, height, point, events: this.getPanelEvents() }
     ).panel
     this.figure = new Diagram(this.panel, {
       data: this.getDiagramParameter(),
@@ -350,7 +353,7 @@ export default class Component extends Tree {
   }
 
   // 当前panel移位
-  translate ({x: xDistance, y: yDistance}) {
+  translate ({ x: xDistance, y: yDistance }) {
     const origin = this.panel.attrs.point
     this.panel.attrs.point = [
       origin[0] + xDistance,
@@ -415,13 +418,15 @@ export default class Component extends Tree {
     const result = {
       id: this.id,
       type: this.type, // 组件类型
+      module: this.type,
       status: this.status, // 当前组件的状态
       disable: this.disable,
 
       name: this.name, // 当前组件名称
       role: this.role, // 当前组件针对的角色
       point: center,
-      width: center,
+      position: center,
+      width: this.panel.attrs.width,
       height: this.panel.attrs.height,
       single: this.single,
       dataOutput_count: 0,
