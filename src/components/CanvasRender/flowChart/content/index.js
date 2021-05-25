@@ -229,7 +229,7 @@ export default class Component extends Tree {
 
         _t.isChanging = false
         if (_t.statusChangeList.length > 0) {
-          _t.figure.dispatchEvents('isChangingStatus', _t.statusChangeList.splice(0, 1)[0])
+          _t.figure.dispatchEvents('isChangingStatus', _t.statusChangeList.shift())
         }
       },
       isChangingStatus (status) {

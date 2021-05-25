@@ -20,12 +20,16 @@ export default class Choosen {
     this.emiter.dispatch('afterChoose', this.choosen)
   }
 
+  // delete 添加删除事件。
   deleteChoose () {
     if (this.choosen) {
-      if (this.choosen instanceof Linking) {
-        GLOBAL.deleteLink(this.choosen)
-      } else {
-        GLOBAL.deleteComp(this.choosen.id || this.choosen.uuid, true, this.choosen)
+      if (this.emiter.dispatch('beforeDelete', this.choosen) !== false) {
+        if (this.choosen instanceof Linking) {
+          GLOBAL.deleteLink(this.choosen)
+        } else {
+          GLOBAL.deleteComp(this.choosen.id || this.choosen.uuid, true, this.choosen)
+        }
+        this.emiter.dispatch('afterDelete')
       }
     }
   }

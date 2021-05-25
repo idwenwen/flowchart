@@ -263,7 +263,8 @@ export class Global extends EventEmitter {
         componentName: item[1].end.root().name,
         componentId: endId.id,
         from: [output, item[1].from.getWhichPort().toString()],
-        to: [output, item[1].end.getWhichPort().toString()]
+        to: [output, item[1].end.getWhichPort().toString()],
+        linkingId: item.uuid
       })
       compInfo[`${output}Output_count`] += 1
     }

@@ -47,12 +47,13 @@ export class EventEmitter {
   dispatch (type, ...rest) {
     try {
       const list = this.events.get(type)
+      let result = true
       if (Array.isArray(list) && list.length > 0) {
-        list.forEach(val => {
-          // if (this.context) {
-          val.call(this.context, ...rest)
-          // }
-        })
+        for (const val of list) {
+          result = val.call(this.context, ...rest)
+          if (result === false) return false
+        }
+        return true
       } else {
         record('NullStackException',
           'There has no events pre setting into emitter')
