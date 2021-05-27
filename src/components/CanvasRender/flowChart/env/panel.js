@@ -73,9 +73,22 @@ const preEvents = {
     }
     isHolding = false
   },
-  mouseover (eve) {
+  mouseenter (eve) {
     if (isHolding) {
-      isHolding = false
+      const current = eve.target || eve.srcElement
+      const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
+      if (current === GLOBAL.globalPanel.getOrigin()) {
+        const l = GLOBAL.linking.linking
+        if (l) {
+          GLOBAL.createConnection(pos)
+        }
+        const m = GLOBAL.moving.getMove()
+        if (m) {
+          MOVING_FUNC(m, pos)
+          GLOBAL.moving.setMove()
+        }
+        isHolding = false
+      }
     }
   },
   click (eve) {
