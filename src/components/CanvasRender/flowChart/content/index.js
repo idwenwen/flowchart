@@ -229,10 +229,10 @@ export default class Component extends Tree {
           const icon = new ICONTip(_t, status) // 添加新的ICON
           _t.addSub(icon.uuid, icon)
         }
-
-        _t.isChanging = false
         if (_t.statusChangeList.length > 0) {
           _t.figure.dispatchEvents('isChangingStatus', _t.statusChangeList.shift())
+        } else {
+          _t.isChanging = false
         }
       },
       isChangingStatus (status) {
