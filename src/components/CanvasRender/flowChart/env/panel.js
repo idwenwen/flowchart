@@ -1,5 +1,5 @@
 
-import { throttle, toArray } from 'lodash'
+import { throttle } from 'lodash'
 import Panel from '../../core/panel'
 import { getPos } from '../utils'
 import Callback from './callback'
@@ -13,7 +13,7 @@ let sensible = true
 const MOVING_FUNC = throttle(function (m, pos) {
   const x = pos[0] - origin[0]
   const y = pos[1] - origin[1]
-  const list = toArray(m)
+  const list = Array.isArray(m) ? m : [m]
   for (const val of list) {
     val.translate({
       x, y
@@ -52,6 +52,8 @@ const preEvents = {
       }
       if (!l && !m) {
         // 表示当前的内容是全局移动。
+        const changing = GLOBAL.getComps()
+        MOVING_FUNC(changing, pos)
       }
     }
   },
@@ -70,6 +72,11 @@ const preEvents = {
       }
     }
     isHolding = false
+  },
+  mouseover (eve) {
+    if (isHolding) {
+      isHolding = false
+    }
   },
   click (eve) {
     // 点击了空白处，所以无选中

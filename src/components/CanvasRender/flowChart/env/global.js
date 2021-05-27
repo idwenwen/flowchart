@@ -325,6 +325,15 @@ export class Global extends EventEmitter {
       comp.setOld(bool)
     }
   }
+
+  /** 获取所有的组件内容。 */
+  getComps () {
+    const result = []
+    for (const val of this.globalComp.values()) {
+      result.push(val)
+    }
+    return result
+  }
 }
 
 let GLOBAL = new Global()

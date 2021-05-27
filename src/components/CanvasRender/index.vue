@@ -117,7 +117,7 @@ export default {
 <style scoped>
 .canvas-panel {
   width: 500px;
-  height: 1200px;
+  height: 400px;
   position: relative;
   border: 1px solid black;
 }
