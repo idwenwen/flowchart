@@ -108,4 +108,26 @@ export default class ContentPorts extends Tree {
       }
     }
   }
+
+  dataOutputCount () {
+    const list = this.getChildren()
+    let count = 0
+    for (const val of list) {
+      if (val.name.match(/output/i) && val.name.match(/data/i)) {
+        count++
+      }
+    }
+    return count
+  }
+
+  modelOutputCount () {
+    const list = this.getChildren()
+    let count = 0
+    for (const val of list) {
+      if (val.name.match(/output/i) && val.name.match(/model/i)) {
+        count++
+      }
+    }
+    return count
+  }
 }

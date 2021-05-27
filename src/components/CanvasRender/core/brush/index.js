@@ -74,13 +74,15 @@ class Brushing {
     const copyParam = Object.assign({}, parameter)
     this.call(customProcess.beforeSave, copyParam) // 存储先的预设工作
     this.save()
-    this.call(customProcess.beforeDraw, copyParam) // 绘制前的预设工作
+    this.call(customProcess.beforeBeginPath, copyParam) // 绘制后回调函数
 
     this.beginPath() // 路径绘制开始
+    this.call(customProcess.beforeDraw, copyParam) // 绘制前的预设工作
     path.call(this, this.ctx, copyParam) // 路径绘制
+    this.call(customProcess.afterDraw, copyParam) // 绘制后回调函数
     this.closePath() // 路径绘制结束
 
-    this.call(customProcess.afterDraw, copyParam) // 绘制后回调函数
+    this.call(customProcess.afterClosePath, copyParam) // 绘制后回调函数
     this.restore()
     this.call(customProcess.afterRestore, copyParam)
   }

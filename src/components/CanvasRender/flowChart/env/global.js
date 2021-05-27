@@ -205,10 +205,10 @@ export class Global extends EventEmitter {
 
   // 判定当前坐标点是属于哪一个组件或者连线的。
   belongTo (pos) {
-    const checking = (map) => {
+    const checking = (map, stroke) => {
       for (const val of map) {
         if (val[1].figure.isPointInFigure(
-          compareToPos(pos, GLOBAL.globalPanel.getOrigin(), val[1].panel.getOrigin())
+          compareToPos(pos, GLOBAL.globalPanel.getOrigin(), val[1].panel.getOrigin()), stroke
         )) {
           return val[1]
         }
@@ -217,7 +217,7 @@ export class Global extends EventEmitter {
     }
     let comp = checking(this.globalComp)
     if (comp) return comp
-    comp = checking(this.globalLinking)
+    comp = checking(this.globalLinking, true)
     if (comp) return comp
   }
 
@@ -270,7 +270,6 @@ export class Global extends EventEmitter {
         to: [output, item[1].end.getWhichPort().toString()],
         linkingId: item.uuid
       })
-      compInfo[`${output}Output_count`] += 1
     }
     return list
   }

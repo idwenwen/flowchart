@@ -123,7 +123,7 @@ class Linking extends Tree {
     const _t = this
     return {
       click: function (eve) {
-        if (_t.figure.isPointInFigure(getPos(eve))) {
+        if (_t.figure.isPointInFigure(getPos(eve), true)) {
           GLOBAL.choosen.choose(_t)
           eve.stopPropagation()
         }

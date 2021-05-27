@@ -52,14 +52,14 @@ export default class Port extends Tree {
     this.toRender()
   }
 
-  linkFrom (pos) {
+  linkFrom (_pos) {
     // 表示当前对象不是outer内容。
     if (!GLOBAL.linking.checkWithFrom(this)) {
       if (!GLOBAL.linking.hasFrom() && !this.hasConnect) {
         // 表示当前内容是否已经可以确定。
         // 计算当前内容的位置是否符合预期。如果是符合预期的则添加相关的连接参数。
         const final = compareToPos(
-          pos,
+          this.figure.data.cache.center,
           this.root().panel.getOrigin(),
           GLOBAL.globalPanel.getOrigin()
         )
@@ -143,9 +143,20 @@ export default class Port extends Tree {
   }
 
   inPort (position) {
-    if (this.figure.isPointInFigure(position)) {
+    const width = this.figure.data.cache.width
+    const height = this.figure.data.cache.height
+    const center = this.figure.data.cache.center
+    // let checkPos = position
+    if (
+      Math.abs(position[0] - center[0]) <= width * 1.5 &&
+      Math.abs(position[1] - center[1]) <= height * 2
+    ) {
+      // checkPos = center
       return this
     }
+    // if (this.figure.isPointInFigure(checkPos)) {
+    //   return this
+    // }
     return false
   }
 

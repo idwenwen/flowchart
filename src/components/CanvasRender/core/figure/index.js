@@ -201,7 +201,7 @@ class Figure extends Tree {
    * @param {[number, number]} point 当前点击位置的点内容
    * @param {Object} ctx 2D画板对象
    */
-  isPointInFigure (point, ctx = calculateCanvas.dom.getContext('2d')) {
+  isPointInFigure (point, stroke, ctx = calculateCanvas.dom.getContext('2d')) {
     // ctx将直接使用计算绘板代替
     let result = false
 
@@ -215,7 +215,9 @@ class Figure extends Tree {
           this.data.cache,
           {
             beforeDraw: function (ctxx, parameter) {
-              parameter.lineWidth = 15
+              if (stroke) {
+                parameter.lineWidth = 15
+              }
             },
             // 在afterDraw生命周期之中判定当前点内容是否在路径之中
             afterDraw: function (ctxx) {
@@ -223,8 +225,11 @@ class Figure extends Tree {
               // 绘制之后判别内容。
                 if (!__t.drawPath || __t.drawPath._origin !== 'icon') {
                 // 如果当前内容不是ICON的话。
-
-                  result = ctxx.isPointInPath(point[0], point[1])
+                  if (!stroke) {
+                    result = ctxx.isPointInPath(point[0], point[1])
+                  } else {
+                    result = ctxx.isPointInStroke(point[0], point[1])
+                  }
                 } else {
                 // 如果当前的内容是ICON的话。则通过borderBox的方式去比较。
                   const data = __t.data.cache

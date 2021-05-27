@@ -451,8 +451,8 @@ export default class Component extends Tree {
       width: this.panel.attrs.width,
       height: this.panel.attrs.height,
       single: this.single,
-      dataOutput_count: 0,
-      modelOutput_count: 0,
+      dataOutput_count: this.getChildren()[1].dataOutputCount(),
+      modelOutput_count: this.getChildren()[1].modelOutputCount(),
       dependency: {}
     }
 
