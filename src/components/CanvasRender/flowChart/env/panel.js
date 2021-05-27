@@ -1,5 +1,5 @@
 
-import { throttle } from 'lodash'
+import { throttle, toArray } from 'lodash'
 import Panel from '../../core/panel'
 import { getPos } from '../utils'
 import Callback from './callback'
@@ -13,9 +13,12 @@ let sensible = true
 const MOVING_FUNC = throttle(function (m, pos) {
   const x = pos[0] - origin[0]
   const y = pos[1] - origin[1]
-  m.translate({
-    x, y
-  })
+  const list = toArray(m)
+  for (const val of list) {
+    val.translate({
+      x, y
+    })
+  }
   origin = pos
 }, 50)
 // 对于当前移位的敏感性进行干预。
@@ -46,6 +49,9 @@ const preEvents = {
         MOVING_FUNC(m, pos)
         m.lastStatus = 'moving'
         hasMoving = true
+      }
+      if (!l && !m) {
+        // 表示当前的内容是全局移动。
       }
     }
   },

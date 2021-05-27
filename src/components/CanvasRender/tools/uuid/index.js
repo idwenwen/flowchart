@@ -22,4 +22,8 @@ export default class UUID {
     this.index = this.next(this.index)
     return result
   }
+
+  set (index) {
+    this.index = index || this.next(this.index)
+  }
 }

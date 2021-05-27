@@ -42,4 +42,8 @@ export default class ChartFlow {
   choose (comp) {
     GLOBAL.choosing(comp)
   }
+
+  setOld (id, bool = true) {
+    GLOBAL.setOld(id, bool)
+  }
 }

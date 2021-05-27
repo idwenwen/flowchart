@@ -73,6 +73,7 @@ class GlobalNameCheck {
   }
   clearRecord () {
     this.record = {}
+    this.filter = {}
   }
 }
 const defaultName = new GlobalNameCheck()
@@ -93,6 +94,7 @@ export default class Component extends Tree {
       choose = false, // 当前组件是否被选择
 
       single = false,
+      old = false, // 当前组件是否是不可修改的已有组件。
 
       width,
       height,
@@ -105,6 +107,7 @@ export default class Component extends Tree {
     this.type = type || module
     this.status = matchStatus('unrun')
     this.disable = disable
+    this.old = old
 
     if (name) defaultName.setFilter(type, name)
     this.name = name || defaultName.getName(this.type)
@@ -233,14 +236,14 @@ export default class Component extends Tree {
         }
       },
       isChangingStatus (status) {
-        if (_t.status !== status) {
-          _t.removeICON() // 状态改变移除原有的ICON
-          if (_t.status === ComponentsStatus.running) {
-            _t.figure.endAnimate('loading')
-          }
-          // 组件的toStatus方法
-          _t.figure.dispatchAnimate('changeStatus', status)
+        // if (_t.status !== status) {
+        _t.removeICON() // 状态改变移除原有的ICON
+        if (_t.status === ComponentsStatus.running) {
+          _t.figure.endAnimate('loading')
         }
+        // 组件的toStatus方法
+        _t.figure.dispatchAnimate('changeStatus', status)
+        // }
       },
       // 状态修改过程启动
       startChangeStatus (status) {
@@ -325,6 +328,13 @@ export default class Component extends Tree {
     this.figure.dispatchEvents('unchoose')
   }
 
+  isOld () {
+    return this.old
+  }
+  setOld (old) {
+    this.old = old
+  }
+
   addSub (name, subComp) {
     this.subs.add(name, subComp)
     this.panel.append(subComp.panel)
@@ -380,7 +390,7 @@ export default class Component extends Tree {
   }
 
   // 获取与当前组件关联的上层组件内容。
-  getConnection () {
+  getConnection (type) {
     const getTopper = function (node) {
       const willNotHint = []
       const final = []
@@ -393,7 +403,19 @@ export default class Component extends Tree {
       final.push(node)
       return Array.from(new Set(final))
     }
-    return getTopper(this)
+    const getBottom = function (node) {
+      const willNotHint = []
+      const final = []
+      for (const val of node.linkOut) {
+        willNotHint.push(val.end.root())
+      }
+      for (const val of willNotHint) {
+        final.push(...getBottom(val))
+      }
+      final.push(node)
+      return Array.from(new Set(final))
+    }
+    return type.match(/output/i) ? getTopper(this) : getBottom(this)
   }
 
   getNextLevel (type) {

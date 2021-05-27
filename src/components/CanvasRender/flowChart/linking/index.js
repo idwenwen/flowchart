@@ -19,9 +19,14 @@ class Linking extends Tree {
   // from: Component 启始组件
   // end: Component 结束关联组件
 
-  constructor (startPoint, endPoint, from, end) {
+  constructor (startPoint, endPoint, from, end, id) {
     super()
-    this.uuid = name || linkingId.get().toString()
+    if (id) {
+      this.uuid = id
+      linkingId.set()
+    } else {
+      this.uuid = linkingId.get().toString()
+    }
     this.startPoint = startPoint
     this.endPoint = endPoint
 

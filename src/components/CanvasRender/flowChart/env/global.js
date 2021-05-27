@@ -66,9 +66,10 @@ export class Global extends EventEmitter {
   // 创建当前的可用连线
   createLinking (startPoint, endPoint, port) {
     const l = new Linking(startPoint, endPoint)
-    let list = port.root().getConnection()
-    const nextLevel = port.root().getNextLevel(port.type.match(/data/i) ? 'data' : 'model')
-    list = list.concat(...nextLevel)
+    // 依据当前的port输入输出形式屏蔽相对应的端口信息
+    let list = port.root().getConnection(port.type)
+    // const nextLevel = port.root().getNextLevel(port.type.match(/data/i) ? 'data' : 'model')
+    // list = list.concat(...nextLevel)
     // 开始连接
     this.dispatch('linkStart')
     l.linkStart() // 创建连线。
@@ -125,9 +126,9 @@ export class Global extends EventEmitter {
     // 连接成功
     this.dispatch('linkSuccessd', l)
   }
-  createConnectionDir (startPos, endPos, from, end) {
+  createConnectionDir (startPos, endPos, from, end, id) {
     // 直接连线当前内容。
-    const l = new Linking(startPos, endPos, from, end)
+    const l = new Linking(startPos, endPos, from, end, id)
     from.linkOut(l)
     end.linkInto(l)
     l.linkEnd()
@@ -160,9 +161,12 @@ export class Global extends EventEmitter {
       comp = this.globalComp.get(id)
     }
     if (comp) {
-      if (trigger) this.dispatch('beforeDeleteComponent', id, choosen)
-      comp.clearUp()
-      if (trigger) this.dispatch('afterDeleteComponent', id, choosen)
+      let result = true
+      if (trigger) result = this.dispatch('beforeDeleteComponent', id, choosen)
+      if (result !== false) {
+        comp.clearUp()
+        if (trigger) this.dispatch('afterDeleteComponent', id, choosen)
+      }
     }
   }
   deleteComps (ids) {
@@ -174,7 +178,7 @@ export class Global extends EventEmitter {
   }
 
   deleteLink (link) {
-    this.dispatch('beforeDeleteLink')
+    this.dispatch('beforeDeleteLink', link)
     let res = link
     if (!(link instanceof Linking)) {
       res = this.globalLinking.get('link')
@@ -296,7 +300,7 @@ export class Global extends EventEmitter {
             const fromPort = fromComp.getPort(parseInt(dataO.from[1]), dataO.from[0], true)
             const startPos = fromPort.currentPosition(this.globalPanel.getOrigin())
             const endPos = endPort.currentPosition(this.globalPanel.getOrigin())
-            this.createConnectionDir(startPos, endPos, fromPort, endPort)
+            this.createConnectionDir(startPos, endPos, fromPort, endPort, dataO.linkingId)
           }
         }
       }
@@ -314,6 +318,12 @@ export class Global extends EventEmitter {
   // 选择API
   choosing (comp) {
     this.choosen.choose(comp)
+  }
+  setOld (id, bool = true) {
+    const comp = this.globalComp.get(id)
+    if (comp) {
+      comp.setOld(bool)
+    }
   }
 }
 

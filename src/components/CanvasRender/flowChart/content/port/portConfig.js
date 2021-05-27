@@ -33,11 +33,14 @@ const hasMoreDataInput = [
   'kmeans'
 ]
 
+const hasNoDataInput = ['reader']
+
 const hasMultipleDataInput = ['evaluation', 'union']
 
 function getDataInput (type, allSignlePort = false) {
   let res = []
   if (match(hasNoData, type)) return res
+  if (match(hasNoDataInput, type)) return res
   const multiple = match(hasMultipleDataInput, type)
   if (allSignlePort || !match(hasMoreDataInput, type)) {
     res.push({
@@ -153,7 +156,7 @@ const hasNoModel = [
   'scorecard'
 ]
 
-const hasMultipeModelInput = ['secureboost']
+const hasMultipeModelInput = ['secureboost', 'selection']
 
 const hasNoModelInput = ['statistics', 'psi']
 
