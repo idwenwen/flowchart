@@ -10,6 +10,7 @@ import SubCompManager from '../subContent'
 import { getPos } from '../utils'
 import UUID from '../../tools/uuid'
 import ICONTip from '../subContent/iconTip'
+import ContentLock from '../subContent/contentLock'
 
 export const ComponentsStatus = {
   unrun: 'unrun|waiting',
@@ -107,7 +108,7 @@ export default class Component extends Tree {
     this.type = type || module
     this.status = matchStatus('unrun')
     this.disable = disable
-    this.old = old
+    this.old = false
 
     if (name) defaultName.setFilter(type, name)
     this.name = name || defaultName.getName(this.type)
@@ -131,6 +132,7 @@ export default class Component extends Tree {
     this.panel = null
     this.toRender(width, height, point || position, status)
     GLOBAL.registerComp(this.id, this)
+    this.setOld(old)
   }
 
   // diagram 组件的配置信息与组件内容。
@@ -254,6 +256,14 @@ export default class Component extends Tree {
           _t.isChanging = true
           _t.figure.dispatchEvents('isChangingStatus', _t.statusChangeList.splice(0, 1)[0])
         }
+      },
+      locking (willlock) {
+        if (willlock) {
+          const icon = new ContentLock(_t)
+          _t.addSub(icon.uuid, icon)
+        } else {
+          _t.removeLOCK()
+        }
       }
     }
   }
@@ -332,7 +342,10 @@ export default class Component extends Tree {
     return this.old
   }
   setOld (old) {
-    this.old = old
+    if (old !== this.old) {
+      this.figure.dispatchEvents('locking', old)
+      this.old = old
+    }
   }
 
   addSub (name, subComp) {
@@ -346,6 +359,11 @@ export default class Component extends Tree {
   removeICON () {
     this.subs.filter(function (key) {
       return !!key.match(/ICONTip/)
+    })
+  }
+  removeLOCK () {
+    this.subs.filter(function (key) {
+      return !!key.match(/ContentLock/)
     })
   }
 

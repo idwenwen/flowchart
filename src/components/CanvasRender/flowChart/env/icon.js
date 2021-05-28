@@ -6,7 +6,8 @@ export default class Icons {
       error: require('../icon/error.svg'),
       disableError: require('../icon/disable_error.svg'),
       multData: require('../icon/mult_data.svg'),
-      multModel: require('../icon/mult_model.svg')
+      multModel: require('../icon/mult_model.svg'),
+      contentLock: require('../icon/content_lock.svg')
     }
     this.icons = new Map()
     if (setting) {

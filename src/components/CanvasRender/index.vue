@@ -9,6 +9,7 @@
     <button @click="clear">clear</button>
     <button @click="rebuild">rebuild</button>
     <button @click="changeStatus">status</button>
+    <button @click="setOld">old</button>
   </div>
 </template>
 
@@ -35,8 +36,9 @@ export default {
         type: 'secureboost',
         choose: false,
         disable: false,
-        status: 'success',
-        role: 'guest'
+        status: 'fail',
+        role: 'host',
+        old: true
       }, {
         id: 'comp_1',
         type: 'reader',
@@ -109,6 +111,9 @@ export default {
         this.chartFlow.changeStatus(this.statusChange[this.statusIndex])
         this.statusIndex += 1
       }
+    },
+    setOld () {
+      this.chartFlow.setOld('comp_0')
     }
   }
 }
