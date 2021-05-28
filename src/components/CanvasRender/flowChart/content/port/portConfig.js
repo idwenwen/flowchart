@@ -32,9 +32,7 @@ const hasMoreDataInput = [
   'psi',
   'kmeans'
 ]
-
 const hasNoDataInput = ['reader']
-
 const hasMultipleDataInput = ['evaluation', 'union']
 
 function getDataInput (type, allSignlePort = false) {
@@ -81,9 +79,7 @@ const hasNoDataOutput = [
   'psi',
   'kmeans'
 ]
-
 const hasTwoOutputPort = ['kmeans']
-
 const hasThreeOutputPort = ['datasplit']
 
 function getDataOutput (type, _allSignlePort = false) {
@@ -155,9 +151,7 @@ const hasNoModel = [
   'pearson',
   'scorecard'
 ]
-
 const hasMultipeModelInput = ['secureboost', 'selection']
-
 const hasNoModelInput = ['statistics', 'psi']
 
 function getModelInput (type, _allSignlePort = false) {
