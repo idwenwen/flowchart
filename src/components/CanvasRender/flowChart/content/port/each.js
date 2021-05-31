@@ -63,8 +63,7 @@ export default class Port extends Tree {
           this.root().panel.getOrigin(),
           GLOBAL.globalPanel.getOrigin()
         )
-        GLOBAL.createLinking(final, final, this)
-        return true
+        return GLOBAL.createLinking(final, final, this) !== false
       }
     }
     return false

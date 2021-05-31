@@ -65,23 +65,26 @@ export class Global extends EventEmitter {
 
   // 创建当前的可用连线
   createLinking (startPoint, endPoint, port) {
-    const l = new Linking(startPoint, endPoint)
-    // 依据当前的port输入输出形式屏蔽相对应的端口信息
-    let list = port.root().getConnection(port.type)
-    // const nextLevel = port.root().getNextLevel(port.type.match(/data/i) ? 'data' : 'model')
-    // list = list.concat(...nextLevel)
-    // 开始连接
-    this.dispatch('linkStart')
-    l.linkStart() // 创建连线。
-    this.createLinkHint(list, port.type)
-    this.linking.link(l) // 设置当前的连线信息
-    if (port.type.match(/output/i)) { // 当前端口是否是输出端口
-      this.linking.from(port)
-      l.from = port
-    } else {
-      this.linking.into(port)
-      l.end = port
+    if (this.dispatch('linkStart', port) !== false) {
+      const l = new Linking(startPoint, endPoint)
+      // 依据当前的port输入输出形式屏蔽相对应的端口信息
+      let list = port.root().getConnection(port.type)
+      // const nextLevel = port.root().getNextLevel(port.type.match(/data/i) ? 'data' : 'model')
+      // list = list.concat(...nextLevel)
+      // 开始连接
+      l.linkStart() // 创建连线。
+      this.createLinkHint(list, port.type)
+      this.linking.link(l) // 设置当前的连线信息
+      if (port.type.match(/output/i)) { // 当前端口是否是输出端口
+        this.linking.from(port)
+        l.from = port
+      } else {
+        this.linking.into(port)
+        l.end = port
+      }
+      return true
     }
+    return false
   }
   // 创建连接。
   createConnection (position, port) {

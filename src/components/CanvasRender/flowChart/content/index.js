@@ -53,15 +53,12 @@ function matchRole (role) {
 
 class GlobalNameCheck {
   constructor () {
-    this.record = {}
     this.filter = {}
   }
-  getName (type) {
-    let index = this.record[type] || 0
-    this.record[type] = index + 1
+  getName (type, index = 0) {
     const name = type + '_' + index
     if (this.filter[type] && this.filter[type].has(name)) {
-      return this.getName(type)
+      return this.getName(type, index + 1)
     } else {
       this.setFilter(type, name)
       return name
@@ -73,7 +70,6 @@ class GlobalNameCheck {
     list.add(name)
   }
   clearRecord () {
-    this.record = {}
     this.filter = {}
   }
 }
@@ -277,8 +273,8 @@ export default class Component extends Tree {
         // 获取当前port的对象
         const pos = getPos(eve)
         const mid = _t.checkPositionForPort(pos)
-        if (mid) {
-          mid.linkFrom(pos) // 创建连接,结果表示当前连接创建是否成功
+        if (mid && mid.linkFrom(pos)) {
+          // 创建连接,结果表示当前连接创建是否成功
           _t.lastStatus = 'linking'
         } else {
           // 如果当前没有连接的话，设置当前内容为moving
