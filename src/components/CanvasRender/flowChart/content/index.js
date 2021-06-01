@@ -69,6 +69,12 @@ class GlobalNameCheck {
     if (!this.filter[type]) this.filter[type] = list
     list.add(name)
   }
+  removeFilter (type, name) {
+    let list = this.filter[type]
+    if (list) {
+      list.delete(name)
+    }
+  }
   clearRecord () {
     this.filter = {}
   }
@@ -395,6 +401,7 @@ export default class Component extends Tree {
   // 清除当前对象的数据内容。
   clearUp () {
     // 清除当前的展示内容
+    defaultName.removeFilter(this.type, this.name);
     ([...(Array.from(this.linkInto)), ...(Array.from(this.linkOut))]).forEach(val => {
       val.clearUp()
     })

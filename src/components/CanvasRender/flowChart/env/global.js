@@ -261,15 +261,27 @@ export class Global extends EventEmitter {
     for (const item of this.globalLinking) {
       // 添加linking内容
       const output = item[1].from.type.match(/data/) ? 'data' : 'model'
+      const input = item[1].end.type.match(/data/) ? 'data' : 'model'
       const fromId = item[1].from.root()
       const endId = item[1].end.root()
-      const compInfo = list.find((val) => val.id === fromId.id) // list之中查找到相关的组件内容。
-      if (!compInfo.dependency) compInfo.dependency = {}
-      if (!compInfo.dependency[output + 'Output']) compInfo.dependency[output + 'Output'] = []
-      compInfo.dependency[output + 'Output'].push({
+      const compOutputInfo = list.find((val) => val.id === fromId.id) // list之中查找到相关的组件内容。
+      if (!compOutputInfo.dependency) compOutputInfo.dependency = {}
+      if (!compOutputInfo.dependency[output + 'Output']) compOutputInfo.dependency[output + 'Output'] = []
+      compOutputInfo.dependency[output + 'Output'].push({
         componentName: item[1].end.root().name,
         componentId: endId.id,
         from: [output, item[1].from.getWhichPort().toString()],
+        to: [output, item[1].end.getWhichPort().toString()],
+        linkingId: item.uuid
+      })
+
+      const compInputInfo = list.find((val) => val.id === endId.id) // list之中查找到相关的组件内容。
+      if (!compInputInfo.dependency) compInputInfo.dependency = {}
+      if (!compInputInfo.dependency[input + 'Input']) compInputInfo.dependency[input + 'Input'] = []
+      compInputInfo.dependency[input + 'Input'].push({
+        componentName: item[1].from.root().name,
+        componentId: fromId.id,
+        from: [input, item[1].from.getWhichPort().toString()],
         to: [output, item[1].end.getWhichPort().toString()],
         linkingId: item.uuid
       })

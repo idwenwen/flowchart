@@ -97,7 +97,7 @@ export default {
       }
     },
     getInfo () {
-      return JSON.stringify(this.chartFlow.getInfo())
+      console.log(this.chartFlow.getInfo())
     },
     clear () {
       this.chartFlow.clear()
