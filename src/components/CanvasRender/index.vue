@@ -77,7 +77,7 @@ export default {
       ],
       statusIndex: 0,
 
-      comps:[
+      comps: [
         [{'id': 'comp_0', 'type': 'binning', 'status': 'success|complete', 'disable': false, 'name': 'binning_0', 'role': 'guest', 'point': [116, 152], 'width': 240, 'height': 55, 'single': false, 'dependency': {'modelOutput': [{'componentName': 'secureboost_0', 'componentId': 'comp_2', 'from': ['model', 0], 'to': ['model', 0]}], 'dataOutput': [{'componentName': 'secureboost_0', 'componentId': 'comp_2', 'from': ['data', 0], 'to': ['data', 0]}]}}, {'id': 'comp_1', 'type': 'reader', 'status': 'success|complete', 'disable': false, 'name': 'reader_0', 'role': 'guest', 'point': [191, 33], 'width': 240, 'height': 55, 'single': false, 'dependency': {'dataOutput': [{'componentName': 'binning_0', 'componentId': 'comp_0', 'from': ['data', 0], 'to': ['data', 0]}]}}, {'id': 'comp_2', 'type': 'secureboost', 'status': 'success|complete', 'disable': false, 'name': 'secureboost_0', 'role': 'guest', 'point': [173, 284], 'width': 240, 'height': 55, 'single': false}],
         [{'id': 'comp_0', 'type': 'selection', 'status': 'success|complete', 'disable': false, 'name': 'selection_0', 'role': 'guest', 'point': [116, 152], 'width': 240, 'height': 55, 'single': false, 'dependency': {'dataOutput': [{'componentName': 'secureboost_0', 'componentId': 'comp_2', 'from': ['data', 0], 'to': ['data', 0]}]}}, {'id': 'comp_1', 'type': 'reader', 'status': 'success|complete', 'disable': false, 'name': 'reader_0', 'role': 'guest', 'point': [191, 33], 'width': 240, 'height': 55, 'single': false, 'dependency': {'dataOutput': [{'componentName': 'binning_0', 'componentId': 'comp_0', 'from': ['data', 0], 'to': ['data', 0]}]}}, {'id': 'comp_2', 'type': 'secureboost', 'status': 'success|complete', 'disable': false, 'name': 'secureboost_0', 'role': 'guest', 'point': [173, 284], 'width': 240, 'height': 55, 'single': false}]
       ],
@@ -120,9 +120,11 @@ export default {
     },
     setOld () {
       this.chartFlow.setOld('comp_0')
-    }
-    cache() {
-
+    },
+    caching () {
+      const mid = this.cacheGlobal
+      this.cacheGlobal = this.chartFlow.getCurrentGlobal()
+      this.chartFlow.setCurrentGlobal(mid)
     }
   }
 }
