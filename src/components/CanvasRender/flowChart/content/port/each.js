@@ -5,7 +5,6 @@ import Tree from '../../../tools/tree'
 import { toFigure } from '../../../core/figure'
 import { compareToPos } from '../../utils'
 import LinkHint from '../../subContent/hint'
-import GLOBAL from '../../env/global'
 import { isNil } from 'lodash'
 
 function portColor (disable, status, type) {
@@ -18,12 +17,12 @@ function portColor (disable, status, type) {
       : MODEL_PORT_COLOR
 }
 
-function getImage (multiple, type) {
+function getImage (global, multiple, type) {
   if (multiple) {
     if (type.toLowerCase().match('data')) {
-      return GLOBAL.globalIcons.getIcon('multData')
+      return global.globalIcons.getIcon('multData')
     } else {
-      return GLOBAL.globalIcons.getIcon('multModel')
+      return global.globalIcons.getIcon('multModel')
     }
   }
   return null
@@ -37,8 +36,9 @@ function getPosition (compWidth, compHeight, center, type, len, num) {
 }
 
 export default class Port extends Tree {
-  constructor ({ name, type, tip, multiple }) {
+  constructor ({ name, type, tip, multiple }, global) {
     super()
+    this.global = global
     this.name = name
     this.type = type
     this.tip = tip
@@ -54,16 +54,16 @@ export default class Port extends Tree {
 
   linkFrom (_pos) {
     // 表示当前对象不是outer内容。
-    if (!GLOBAL.linking.checkWithFrom(this)) {
-      if (!GLOBAL.linking.hasFrom() && !this.hasConnect) {
+    if (!this.global.linking.checkWithFrom(this)) {
+      if (!this.global.linking.hasFrom() && !this.hasConnect) {
         // 表示当前内容是否已经可以确定。
         // 计算当前内容的位置是否符合预期。如果是符合预期的则添加相关的连接参数。
         const final = compareToPos(
           this.figure.data.cache.center,
           this.root().panel.getOrigin(),
-          GLOBAL.globalPanel.getOrigin()
+          this.global.globalPanel.getOrigin()
         )
-        return GLOBAL.createLinking(final, final, this) !== false
+        return this.global.createLinking(final, final, this) !== false
       }
     }
     return false
@@ -106,7 +106,7 @@ export default class Port extends Tree {
         return portColor(this.disable, this.status, _t.type)
       },
       image () {
-        return getImage(_t.multiple, _t.type)
+        return getImage(_t.global, _t.multiple, _t.type)
       },
       radius () {
         return this.radius

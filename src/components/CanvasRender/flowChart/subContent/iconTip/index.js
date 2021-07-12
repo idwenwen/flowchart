@@ -3,7 +3,7 @@ import Action from '../../../core/controller/action/action'
 import Diagram from '../../../core/diagram'
 import UUID from '../../../tools/uuid'
 import { ComponentsStatus } from '../../content'
-import GLOBAL from '../../env/global'
+import Global from '../../env/global'
 import PanelManager from '../../panelManager'
 import { getPos } from '../../utils'
 
@@ -36,9 +36,9 @@ export default class ICONTip {
       },
       image () {
         if (_t.status === ComponentsStatus.success) {
-          return GLOBAL.globalIcons.getIcon('complete')
+          return Global.GLOBAL.globalIcons.getIcon('complete')
         } else if (_t.status === ComponentsStatus.fail) {
-          return GLOBAL.globalIcons.getIcon('error')
+          return Global.GLOBAL.globalIcons.getIcon('error')
         }
       }
     }
@@ -86,7 +86,7 @@ export default class ICONTip {
     return {
       click: function (eve) {
         if (_t.figure.isPointInFigure(getPos(eve))) {
-          GLOBAL.choosen.choose(_t.main)
+          Global.GLOBAL.choosen.choose(_t.main)
           eve.stopPropagation()
         }
       }

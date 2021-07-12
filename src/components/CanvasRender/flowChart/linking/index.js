@@ -6,7 +6,6 @@ import PanelManager from '../panelManager'
 import config from './config'
 import Curve from './curve'
 import Tree from '../../tools/tree'
-import GLOBAL from '../env/global'
 import Diagram from '../../core/diagram'
 import { getPos } from '../utils'
 
@@ -19,8 +18,9 @@ class Linking extends Tree {
   // from: Component 启始组件
   // end: Component 结束关联组件
 
-  constructor (startPoint, endPoint, from, end, id) {
+  constructor (global, startPoint, endPoint, from, end, id) {
     super()
+    this.global = global
     if (id) {
       this.uuid = id
       linkingId.set()
@@ -40,7 +40,7 @@ class Linking extends Tree {
 
     this.toRender()
     // 注册当前的连线内容
-    GLOBAL.registerLinking(this.uuid, this)
+    this.global.registerLinking(this.uuid, this)
   }
 
   // figure的相关配置
@@ -124,7 +124,7 @@ class Linking extends Tree {
     return {
       click: function (eve) {
         if (_t.figure.isPointInFigure(getPos(eve), true)) {
-          GLOBAL.choosen.choose(_t)
+          _t.global.choosen.choose(_t)
           eve.stopPropagation()
         }
       }
@@ -149,7 +149,7 @@ class Linking extends Tree {
         return res
       })()
     })
-    GLOBAL.globalPanel.append(this.panel)
+    this.global.globalPanel.append(this.panel)
     return this.figure
   }
 
@@ -216,8 +216,8 @@ class Linking extends Tree {
 
   clearUp () {
     // 清除异己解绑当前的数据关系
-    GLOBAL.globalPanel.remove(this.panel)
-    GLOBAL.globalLinking.delete(this.uuid)
+    this.global.globalPanel.remove(this.panel)
+    this.global.globalLinking.delete(this.uuid)
     if (this.from) {
       this.from.closeConnect(this)
     }

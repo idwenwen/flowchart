@@ -2,7 +2,7 @@ import { toChain } from '../../../core/controller/action'
 import Action from '../../../core/controller/action/action'
 import Diagram from '../../../core/diagram'
 import UUID from '../../../tools/uuid'
-import GLOBAL from '../../env/global'
+import Global from '../../env/global'
 import PanelManager from '../../panelManager'
 import { getPos } from '../../utils'
 
@@ -32,7 +32,7 @@ export default class ContentLock {
         ]
       },
       image () {
-        return GLOBAL.globalIcons.getIcon('contentLock')
+        return Global.GLOBAL.globalIcons.getIcon('contentLock')
       }
     }
   }
@@ -79,7 +79,7 @@ export default class ContentLock {
     return {
       click: function (eve) {
         if (_t.figure.isPointInFigure(getPos(eve))) {
-          GLOBAL.choosen.choose(_t.main)
+          Global.GLOBAL.choosen.choose(_t.main)
           eve.stopPropagation()
         }
       }

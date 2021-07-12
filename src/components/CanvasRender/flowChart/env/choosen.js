@@ -1,5 +1,4 @@
 import Linking from '../linking'
-import GLOBAL from './global'
 
 export default class Choosen {
   constructor (main) {
@@ -25,9 +24,9 @@ export default class Choosen {
     if (this.choosen) {
       if (this.emiter.dispatch('beforeDelete', this.choosen) !== false) {
         if (this.choosen instanceof Linking) {
-          GLOBAL.deleteLink(this.choosen)
+          this.emiter.deleteLink(this.choosen)
         } else {
-          GLOBAL.deleteComp(this.choosen.id || this.choosen.uuid, true, this.choosen)
+          this.emiter.deleteComp(this.choosen.id || this.choosen.uuid, true, this.choosen)
         }
         this.emiter.dispatch('afterDelete')
       }

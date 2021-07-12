@@ -4,12 +4,13 @@ import Port from './each'
 import { getPortConfig } from './portConfig'
 
 export default class ContentPorts extends Tree {
-  constructor (type, single = false, role) {
+  constructor (type, single = false, role, global) {
     super()
     this.figure = null
     this.type = type
     this.single = single
     this.role = role
+    this.global = global
     this.toRender()
   }
 
@@ -64,7 +65,7 @@ export default class ContentPorts extends Tree {
       childList.push(comp)
     })
     port.output.forEach((val, index) => {
-      const comp = new Port(val)
+      const comp = new Port(val, this.global)
       comp.len = port.output.length
       comp.num = index
       childList.push(comp)

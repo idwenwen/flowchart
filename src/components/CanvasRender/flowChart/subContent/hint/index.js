@@ -3,7 +3,7 @@ import Action from '../../../core/controller/action/action'
 import Diagram from '../../../core/diagram'
 import Tree from '../../../tools/tree'
 import UUID from '../../../tools/uuid'
-import GLOBAL from '../../env/global'
+import Global from '../../env/global'
 import PanelManager from '../../panelManager'
 import HintBorder from './hintBorder'
 import HintContent from './hintContent'
@@ -20,7 +20,7 @@ export default class LinkHint extends Tree {
     this.toRender()
 
     // 存储到全局内容之中。
-    GLOBAL.registerHint(this.id, this)
+    Global.GLOBAL.registerHint(this.id, this)
   }
 
   getParameter () {
@@ -136,7 +136,7 @@ export default class LinkHint extends Tree {
       val.clearUp()
     }
     this.main.root().removeSub(this.id)
-    GLOBAL.removeHint(this.id)
+    Global.GLOBAL.removeHint(this.id)
   }
 
   disRender () {

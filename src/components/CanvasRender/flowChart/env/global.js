@@ -22,7 +22,7 @@ export class Global extends EventEmitter {
     this.globalHint = new Map()
 
     // 全局dom内容
-    this.globalPanel = new BackendPanel()
+    this.globalPanel = new BackendPanel(this)
   }
 
   registerComp (id, comp) {
@@ -54,7 +54,7 @@ export class Global extends EventEmitter {
   positionInHint (position) {
     for (const val of this.globalHint) {
       const port = val[1].linkInto(
-        compareToPos(position, GLOBAL.globalPanel.getOrigin(), val[1].panel.getOrigin())
+        compareToPos(position, this.globalPanel.getOrigin(), val[1].panel.getOrigin())
       )
       if (port) {
         return port
@@ -66,7 +66,7 @@ export class Global extends EventEmitter {
   // 创建当前的可用连线
   createLinking (startPoint, endPoint, port) {
     if (this.dispatch('linkStart', port) !== false) {
-      const l = new Linking(startPoint, endPoint)
+      const l = new Linking(this, startPoint, endPoint)
       // 依据当前的port输入输出形式屏蔽相对应的端口信息
       let list = port.root().getConnection(port.type)
       // const nextLevel = port.root().getNextLevel(port.type.match(/data/i) ? 'data' : 'model')
@@ -131,7 +131,7 @@ export class Global extends EventEmitter {
   }
   createConnectionDir (startPos, endPos, from, end, id) {
     // 直接连线当前内容。
-    const l = new Linking(startPos, endPos, from, end, id)
+    const l = new Linking(this, startPos, endPos, from, end, id)
     from.linkOut(l)
     end.linkInto(l)
     l.linkEnd()
@@ -146,7 +146,7 @@ export class Global extends EventEmitter {
   // 添加组件信息内容
   appendComp (compSetting, trigger = true) {
     if (trigger) this.dispatch('beforeAddCompnent')
-    const comp = new Component(compSetting)
+    const comp = new Component(compSetting, this)
     if (trigger) this.dispatch('afterAddComponent', comp)
     return comp
   }
@@ -211,7 +211,7 @@ export class Global extends EventEmitter {
     const checking = (map, stroke) => {
       for (const val of map) {
         if (val[1].figure.isPointInFigure(
-          compareToPos(pos, GLOBAL.globalPanel.getOrigin(), val[1].panel.getOrigin()), stroke
+          compareToPos(pos, this.globalPanel.getOrigin(), val[1].panel.getOrigin()), stroke
         )) {
           return val[1]
         }
@@ -324,7 +324,7 @@ export class Global extends EventEmitter {
   }
   // 重新构建当前图片内容。
   rebuild (setting) {
-    this.clearCanvas()
+    this.clearUp()
     // 清除已有的文件内容
     Component.NamePool.clearRecord()
     this.setInformation(setting)
@@ -348,8 +348,19 @@ export class Global extends EventEmitter {
     }
     return result
   }
+
+  clearUp () {
+    this.clearCanvas()
+    super.clearUp()
+    this.choosen = new Choosen(this)
+    this.linking = new LinkingManager()
+    this.moving = new Moving()
+
+    this.globalIcons = new Icons()
+    this.globalComp = new Map()
+    this.globalLinking = new Map()
+    this.globalHint = new Map()
+  }
 }
 
-let GLOBAL = new Global()
-
-export default GLOBAL
+export default Global

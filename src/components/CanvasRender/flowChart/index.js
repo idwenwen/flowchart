@@ -1,49 +1,60 @@
-const { default: GLOBAL } = require('./env/global')
+const { default: Global } = require('./env/global')
 
 export default class ChartFlow {
   constructor (dom) {
-    GLOBAL.setParent(dom)
-    GLOBAL.setIcons()
+    this.dom = dom
+    this.global = new Global()
+    this.global.setIcons()
+    this.global.setParent(dom)
   }
 
   // 添加单个或者多个组件内容
   append (setting) {
     if (Array.isArray(setting)) {
-      GLOBAL.appendComps(setting)
+      this.global.appendComps(setting)
     } else {
-      GLOBAL.appendComp(setting)
+      this.global.appendComp(setting)
     }
   }
 
   changeStatus (setting) {
-    GLOBAL.changeStatusForComps(setting)
+    this.global.changeStatusForComps(setting)
   }
 
   getInfo () {
-    return GLOBAL.getInformation()
+    return this.global.getInformation()
   }
 
   // 重建当前的DAG内容。
   rebuild (setting) {
-    GLOBAL.rebuild(setting)
+    this.global.rebuild(setting)
   }
 
   clear () {
-    GLOBAL.clearCanvas()
+    this.global.clearCanvas()
   }
 
   addEvent (name, opera) {
-    GLOBAL.addEvent(name, opera)
+    this.global.addEvent(name, opera)
   }
   addEvents (setting) {
-    GLOBAL.addEvents(setting)
+    this.global.addEvents(setting)
   }
 
   choose (comp) {
-    GLOBAL.choosing(comp)
+    this.global.choosing(comp)
   }
 
   setOld (id, bool = true) {
-    GLOBAL.setOld(id, bool)
+    this.global.setOld(id, bool)
+  }
+
+  getCurrentGlobal () {
+    return this.global
+  }
+  setCurrentGlobal (global) {
+    this.global = global || new Global()
+    this.global.setIcons()
+    this.global.setParent(this.dom)
   }
 }

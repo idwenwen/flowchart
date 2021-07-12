@@ -4,7 +4,6 @@ import Panel from '../../core/panel'
 import { getPos } from '../utils'
 import Callback from './callback'
 import { EventEmitterForDom } from './eventEmitter'
-import GLOBAL from './global'
 
 let origin = null
 let hasMoving = false
@@ -30,86 +29,89 @@ const SENSIBILITY = (pos) => {
   }
 }
 
-const preEvents = {
-  mousedown (eve) {
-    isHolding = true
-    origin = getPos(eve, GLOBAL.globalPanel.getOrigin())
-  },
-  mousemove (eve) {
-    if (isHolding) {
-      const l = GLOBAL.linking.linking
-      const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
-      SENSIBILITY(pos)
-      if (l) {
-        l.changing(pos)
-        hasMoving = true
-      }
-      const m = GLOBAL.moving.getMove()
-      if (m && !sensible) {
-        MOVING_FUNC(m, pos)
-        m.lastStatus = 'moving'
-        hasMoving = true
-      }
-      if (!l && !m) {
-        // 表示当前的内容是全局移动。
-        const changing = GLOBAL.getComps()
-        MOVING_FUNC(changing, pos)
-      }
-    }
-  },
-  mouseup (eve) {
-    if (isHolding) {
-      const l = GLOBAL.linking.linking
-      const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
-      SENSIBILITY(pos)
-      if (l) {
-        GLOBAL.createConnection(pos)
-      }
-      const m = GLOBAL.moving.getMove()
-      if (m) {
-        MOVING_FUNC(m, pos)
-        GLOBAL.moving.setMove()
-      }
-    }
-    isHolding = false
-  },
-  mouseenter (eve) {
-    if (isHolding) {
-      const current = eve.target || eve.srcElement
-      const pos = getPos(eve, GLOBAL.globalPanel.getOrigin())
-      if (current === GLOBAL.globalPanel.getOrigin()) {
-        const l = GLOBAL.linking.linking
+const preEvents = (global) => {
+  return {
+    mousedown (eve) {
+      isHolding = true
+      origin = getPos(eve, global.globalPanel.getOrigin())
+    },
+    mousemove (eve) {
+      if (isHolding) {
+        const l = global.linking.linking
+        const pos = getPos(eve, global.globalPanel.getOrigin())
+        SENSIBILITY(pos)
         if (l) {
-          GLOBAL.createConnection(pos)
+          l.changing(pos)
+          hasMoving = true
         }
-        const m = GLOBAL.moving.getMove()
+        const m = global.moving.getMove()
+        if (m && !sensible) {
+          MOVING_FUNC(m, pos)
+          m.lastStatus = 'moving'
+          hasMoving = true
+        }
+        if (!l && !m) {
+        // 表示当前的内容是全局移动。
+          const changing = global.getComps()
+          MOVING_FUNC(changing, pos)
+        }
+      }
+    },
+    mouseup (eve) {
+      if (isHolding) {
+        const l = global.linking.linking
+        const pos = getPos(eve, global.globalPanel.getOrigin())
+        SENSIBILITY(pos)
+        if (l) {
+          global.createConnection(pos)
+        }
+        const m = global.moving.getMove()
         if (m) {
           MOVING_FUNC(m, pos)
-          GLOBAL.moving.setMove()
+          global.moving.setMove()
         }
-        isHolding = false
       }
-    }
-  },
-  click (eve) {
+      isHolding = false
+    },
+    mouseenter (eve) {
+      if (isHolding) {
+        const current = eve.target || eve.srcElement
+        const pos = getPos(eve, global.globalPanel.getOrigin())
+        if (current === global.globalPanel.getOrigin()) {
+          const l = global.linking.linking
+          if (l) {
+            global.createConnection(pos)
+          }
+          const m = global.moving.getMove()
+          if (m) {
+            MOVING_FUNC(m, pos)
+            global.moving.setMove()
+          }
+          isHolding = false
+        }
+      }
+    },
+    click (eve) {
     // 点击了空白处，所以无选中
     // eve.stopPropagation()
-    if (!hasMoving) {
-      GLOBAL.choosen.choose(GLOBAL.belongTo(getPos(eve, GLOBAL.globalPanel.getOrigin())) || null)
-    }
-    hasMoving = false
-    sensible = true
-  },
-  keydown (eve) {
-    const keyCode = eve.keyCode
-    if (keyCode === 8 || keyCode === 27 || keyCode === 46) {
-      GLOBAL.choosen.deleteChoose()
+      if (!hasMoving) {
+        global.choosen.choose(global.belongTo(getPos(eve, global.globalPanel.getOrigin())) || null)
+      }
+      hasMoving = false
+      sensible = true
+    },
+    keydown (eve) {
+      const keyCode = eve.keyCode
+      if (keyCode === 8 || keyCode === 27 || keyCode === 46) {
+        global.choosen.deleteChoose()
+      }
     }
   }
 }
 
 export default class BackendPanel {
-  constructor (parent) {
+  constructor (global, parent) {
+    this.global = global
     this.events = null // 记录本身带生命周期的事件
     this.emmiter = null // 自定义事件触发对象
     this.render()
@@ -155,8 +157,9 @@ export default class BackendPanel {
   eventPreSetting () {
     const res = {}
     const cb = {}
-    for (const key in preEvents) {
-      res[key] = new Callback(preEvents[key])
+    const events = preEvents(this.global)
+    for (const key in events) {
+      res[key] = new Callback(events[key])
       cb[key] = res[key].bind()
     }
     this.events = res

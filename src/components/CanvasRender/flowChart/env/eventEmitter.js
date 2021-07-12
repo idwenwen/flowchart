@@ -1,9 +1,12 @@
 import { isFunction } from 'lodash'
 import { record } from '../../tools/exception'
 import { toArray } from '../../tools/iteration'
+import UUID from '../../tools/uuid'
 
+const EmitterUUID = new UUID(index => `Emitter_${index}`)
 export class EventEmitter {
   constructor (context) {
+    this.uuid = EmitterUUID.get()
     this.contextcontext = context
     this.events = new Map()
   }

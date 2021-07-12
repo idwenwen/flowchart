@@ -5,7 +5,6 @@ import ContentPorts from './port'
 import Content from './content'
 import PanelManager from '../panelManager/index.js'
 import Diagram from '../../core/diagram'
-import GLOBAL from '../env/global'
 import SubCompManager from '../subContent'
 import { getPos } from '../utils'
 import UUID from '../../tools/uuid'
@@ -103,9 +102,11 @@ export default class Component extends Tree {
       height,
       point,
       position // 同point
-    }
+    },
+    global
   ) {
     super()
+    this.global = global
     this.id = id || TreeID.get()
     this.type = type || module
     this.status = matchStatus('unrun')
@@ -133,7 +134,7 @@ export default class Component extends Tree {
     this.figure = null
     this.panel = null
     this.toRender(width, height, point || position, status)
-    GLOBAL.registerComp(this.id, this)
+    this.global.registerComp(this.id, this)
     this.setOld(old)
   }
 
@@ -284,13 +285,13 @@ export default class Component extends Tree {
           _t.lastStatus = 'linking'
         } else {
           // 如果当前没有连接的话，设置当前内容为moving
-          GLOBAL.moving.setMove(_t)
+          _t.global.moving.setMove(_t)
         }
       },
       click: function (eve) {
         // 当前内容被选中
         if (_t.lastStatus !== 'moving' && _t.figure.isPointInFigure(getPos(eve))) {
-          GLOBAL.choosen.choose(_t)
+          _t.global.choosen.choose(_t)
           eve.stopPropagation()
         }
         _t.lastStatus = 'click'
@@ -302,7 +303,7 @@ export default class Component extends Tree {
   toRender (width, height, point, status) {
     const childList = [
       new Content(),
-      new ContentPorts(this.type, this.single, this.role)
+      new ContentPorts(this.type, this.single, this.role, this.global)
     ]
     this.setChildren(childList)
     this.panel = new PanelManager(
@@ -319,7 +320,7 @@ export default class Component extends Tree {
         return res
       })()
     })
-    GLOBAL.globalPanel.append(this.panel) // 全局环境下添加当前的展示内容。
+    this.global.globalPanel.append(this.panel) // 全局环境下添加当前的展示内容。
     this.changeStatus(status)
     return this.figure
   }
@@ -406,12 +407,13 @@ export default class Component extends Tree {
       val.clearUp()
     })
     this.subs.clearUp()
-    GLOBAL.globalPanel.remove(this.panel)
-    GLOBAL.globalComp.delete(this.id)
+    this.global.globalPanel.remove(this.panel)
+    this.global.globalComp.delete(this.id)
   }
 
   // 获取与当前组件关联的上层组件内容。
   getConnection (type) {
+    const _t = this
     const getTopper = function (node) {
       const willNotHint = []
       const final = []
@@ -422,6 +424,7 @@ export default class Component extends Tree {
         final.push(...getTopper(val))
       }
       final.push(node)
+      final.push(..._t.getNextLevel(type.match(/data/i) ? 'data' : 'model'))
       return Array.from(new Set(final))
     }
     const getBottom = function (node) {
@@ -434,6 +437,7 @@ export default class Component extends Tree {
         final.push(...getBottom(val))
       }
       final.push(node)
+      final.push(..._t.getLastLevel(type.match(/data/i) ? 'data' : 'model'))
       return Array.from(new Set(final))
     }
     return type.match(/output/i) ? getTopper(this) : getBottom(this)
@@ -442,6 +446,16 @@ export default class Component extends Tree {
   getNextLevel (type) {
     const list = new Set()
     for (const val of this.linkOut) {
+      if (val.from.type.match(new RegExp(type, 'i'))) {
+        list.add(val.end.root())
+      }
+    }
+    return Array.from(list)
+  }
+
+  getLastLevel (type) {
+    const list = new Set()
+    for (const val of this.linkInto) {
       if (val.from.type.match(new RegExp(type, 'i'))) {
         list.add(val.end.root())
       }
