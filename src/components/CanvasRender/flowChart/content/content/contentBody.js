@@ -113,10 +113,10 @@ export default class ContentBody extends Tree {
     const _t = this
     return {
       width () {
-        return this.width
+        return this.width - (!this.saved ? 2 : 0)
       },
       height () {
-        return this.height
+        return this.height - (!this.saved ? 2 : 0)
       },
       radius () {
         return this.radius

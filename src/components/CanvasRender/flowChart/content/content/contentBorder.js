@@ -3,11 +3,13 @@ import { toChain } from '../../../core/controller/action'
 import Action from '../../../core/controller/action/action'
 import { toFigure } from '../../../core/figure'
 import Tree from '../../../tools/tree'
-import { CHOOSE, COULDNOTRUN, ERROR, SUCCESS, UNRUN } from './config'
+import { CHOOSE, COULDNOTRUN, ERROR, SUCCESS, UNRUN, UNSAVE } from './config'
 
 // 计算当前border组件的颜色
-function borderStyle (choosed, status, disable) {
-  if (choosed) {
+function borderStyle (choosed, status, disable, unsave) {
+  if (!unsave) {
+    return UNSAVE
+  } else if (choosed) {
     return CHOOSE
   } else if (disable && status !== ComponentsStatus.unrun) {
     return UNRUN
@@ -39,7 +41,7 @@ export default class ContentBorder extends Tree {
         {
           variation (progress, status) {
             if (!originColor) originColor = this.color
-            const target = borderStyle(this.choose, status, this.disable)
+            const target = borderStyle(this.choose, status, this.disable, this.saved)
             this.color = Action.get('color')(progress, originColor, target)
           },
           time: 500
@@ -67,7 +69,7 @@ export default class ContentBorder extends Tree {
           return this.radius
         },
         color () {
-          return borderStyle(this.choose, this.status, this.disable)
+          return borderStyle(this.choose, this.status, this.disable, this.saved)
         },
         center () {
           return this.center

@@ -59,7 +59,7 @@ export default class ContentPorts extends Tree {
     let childList = []
 
     port.input.forEach((val, index) => {
-      const comp = new Port(val)
+      const comp = new Port(val, this.global)
       comp.len = port.input.length
       comp.num = index
       childList.push(comp)

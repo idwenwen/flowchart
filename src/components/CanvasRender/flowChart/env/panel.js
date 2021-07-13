@@ -146,6 +146,9 @@ export default class BackendPanel {
       this.parent.append(this.panel.getOrigin())
     }
   }
+  moveoutFromParent () {
+    this.parent.removeChild(this.panel.getOrigin())
+  }
 
   // 当前组件的事件库。
   eventWorks () {

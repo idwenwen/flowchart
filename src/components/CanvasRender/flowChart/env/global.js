@@ -1,4 +1,5 @@
 import { record } from '../../tools/exception'
+import { each } from '../../tools/iteration'
 import Component from '../content'
 import Linking from '../linking'
 import { compareToPos } from '../utils'
@@ -205,6 +206,9 @@ export class Global extends EventEmitter {
   setParent (parent) {
     this.globalPanel.setParent(parent)
   }
+  moveoutFromParent () {
+    this.globalPanel.moveoutFromParent()
+  }
 
   // 判定当前坐标点是属于哪一个组件或者连线的。
   belongTo (pos) {
@@ -339,6 +343,30 @@ export class Global extends EventEmitter {
       comp.setOld(bool)
     }
   }
+  getOld () {
+    const result = []
+    each(this.globalComp)(val => {
+      if (val.isOld()) {
+        result.push(val)
+      }
+    })
+    return result
+  }
+  setUnsave (id, bool = true) {
+    const comp = this.globalComp.get(id)
+    if (comp) {
+      comp.setSaved(bool)
+    }
+  }
+  getUnsave () {
+    const result = []
+    each(this.globalComp)(val => {
+      if (!val.isSaved()) {
+        result.push(val)
+      }
+    })
+    return result
+  }
 
   /** 获取所有的组件内容。 */
   getComps () {
@@ -360,6 +388,10 @@ export class Global extends EventEmitter {
     this.globalComp = new Map()
     this.globalLinking = new Map()
     this.globalHint = new Map()
+  }
+
+  getChoosen () {
+    return this.choosen.choosen
   }
 }
 

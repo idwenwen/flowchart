@@ -3,7 +3,6 @@ import Action from '../../../core/controller/action/action'
 import Diagram from '../../../core/diagram'
 import Tree from '../../../tools/tree'
 import UUID from '../../../tools/uuid'
-import Global from '../../env/global'
 import PanelManager from '../../panelManager'
 import HintBorder from './hintBorder'
 import HintContent from './hintContent'
@@ -11,16 +10,17 @@ import HintContent from './hintContent'
 const hintUUID = new UUID((index) => `hint_${index}`)
 
 export default class LinkHint extends Tree {
-  constructor (main) {
+  constructor (main, global) {
     super()
     this.id = hintUUID.get()
     this.main = main // 存储当前对照的port信息
     this.figure = null
     this.panel = null
+    this.global = global
     this.toRender()
 
     // 存储到全局内容之中。
-    Global.GLOBAL.registerHint(this.id, this)
+    this.global.registerHint(this.id, this)
   }
 
   getParameter () {
@@ -136,7 +136,7 @@ export default class LinkHint extends Tree {
       val.clearUp()
     }
     this.main.root().removeSub(this.id)
-    Global.GLOBAL.removeHint(this.id)
+    this.global.removeHint(this.id)
   }
 
   disRender () {

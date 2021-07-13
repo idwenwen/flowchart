@@ -97,6 +97,7 @@ export default class Component extends Tree {
 
       single = false,
       old = false, // 当前组件是否是不可修改的已有组件。
+      saved = true,
 
       width,
       height,
@@ -119,7 +120,7 @@ export default class Component extends Tree {
     this.choose = choose
     this.single = single
 
-    this.saved = true // 表示当前组件是否被存储。
+    this.saved = saved // 表示当前组件是否被存储。
     this.subs = new SubCompManager(this) // 辅组件
 
     // 异步状态改变状态确定，辅助状态改变。
@@ -231,7 +232,7 @@ export default class Component extends Tree {
         }
         // 添加相关的sub内容
         if (status === ComponentsStatus.success || status === ComponentsStatus.fail) {
-          const icon = new ICONTip(_t, status) // 添加新的ICON
+          const icon = new ICONTip(_t, status, _t.global) // 添加新的ICON
           _t.addSub(icon.uuid, icon)
         }
         if (_t.statusChangeList.length > 0) {
@@ -262,7 +263,7 @@ export default class Component extends Tree {
       },
       locking (willlock) {
         if (willlock) {
-          const icon = new ContentLock(_t)
+          const icon = new ContentLock(_t, _t.global)
           _t.addSub(icon.uuid, icon)
         } else {
           _t.removeLOCK()
@@ -348,6 +349,19 @@ export default class Component extends Tree {
     if (old !== this.old) {
       this.figure.dispatchEvents('locking', old)
       this.old = old
+    }
+  }
+
+  isSaved () {
+    return this.saved
+  }
+  setSaved (saved) {
+    if (saved !== this.saved) {
+      if (saved) {
+        this.figure.dispatchEvents('hasSave')
+      } else {
+        this.figure.dispatchEvents('isSaving')
+      }
     }
   }
 

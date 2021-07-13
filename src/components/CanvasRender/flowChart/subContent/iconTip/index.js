@@ -3,19 +3,19 @@ import Action from '../../../core/controller/action/action'
 import Diagram from '../../../core/diagram'
 import UUID from '../../../tools/uuid'
 import { ComponentsStatus } from '../../content'
-import Global from '../../env/global'
 import PanelManager from '../../panelManager'
 import { getPos } from '../../utils'
 
 const ICONTIPID = new UUID(index => `ICONTip_${index}`)
 
 export default class ICONTip {
-  constructor (main, status) {
+  constructor (main, status, global) {
     this.uuid = ICONTIPID.get()
     this.status = status
     this.main = main
     this.figure = null
     this.panel = null
+    this.global = global
     this.toRender()
   }
 
@@ -36,9 +36,9 @@ export default class ICONTip {
       },
       image () {
         if (_t.status === ComponentsStatus.success) {
-          return Global.GLOBAL.globalIcons.getIcon('complete')
+          return _t.global.globalIcons.getIcon('complete')
         } else if (_t.status === ComponentsStatus.fail) {
-          return Global.GLOBAL.globalIcons.getIcon('error')
+          return _t.global.globalIcons.getIcon('error')
         }
       }
     }
@@ -86,7 +86,7 @@ export default class ICONTip {
     return {
       click: function (eve) {
         if (_t.figure.isPointInFigure(getPos(eve))) {
-          Global.GLOBAL.choosen.choose(_t.main)
+          _t.global.choosen.choose(_t.main)
           eve.stopPropagation()
         }
       }

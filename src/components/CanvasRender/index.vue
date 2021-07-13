@@ -10,6 +10,10 @@
     <button @click="rebuild">rebuild</button>
     <button @click="changeStatus">status</button>
     <button @click="setOld">old</button>
+    <button @click="caching">cache</button>
+    <button @click="setSaved">unsave</button>
+    <button @click="getOld">allOld</button>
+    <button @click="getSaved">allSaved</button>
   </div>
 </template>
 
@@ -121,10 +125,21 @@ export default {
     setOld () {
       this.chartFlow.setOld('comp_0')
     },
+    setSaved () {
+      this.chartFlow.setUnsave('comp_0', false)
+    },
+    getOld () {
+      console.log(this.chartFlow.getOld())
+    },
+    getSaved () {
+      console.log(this.chartFlow.getUnsave())
+    },
     caching () {
       const mid = this.cacheGlobal
       this.cacheGlobal = this.chartFlow.getCurrentGlobal()
+      debugger
       this.chartFlow.setCurrentGlobal(mid)
+      console.log(this.cacheGlobal)
     }
   }
 }

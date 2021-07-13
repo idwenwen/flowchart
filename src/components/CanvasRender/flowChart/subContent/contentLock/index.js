@@ -2,22 +2,23 @@ import { toChain } from '../../../core/controller/action'
 import Action from '../../../core/controller/action/action'
 import Diagram from '../../../core/diagram'
 import UUID from '../../../tools/uuid'
-import Global from '../../env/global'
 import PanelManager from '../../panelManager'
 import { getPos } from '../../utils'
 
 const ContentLockUUID = new UUID(index => `ContentLock_${index}`)
 
 export default class ContentLock {
-  constructor (main) {
+  constructor (main, global) {
     this.uuid = ContentLockUUID.get()
     this.main = main
     this.figure = null
     this.panel = null
+    this.global = global
     this.toRender()
   }
 
   getParameter () {
+    const _t = this
     return {
       width () {
         return this.attrs.width
@@ -32,7 +33,7 @@ export default class ContentLock {
         ]
       },
       image () {
-        return Global.GLOBAL.globalIcons.getIcon('contentLock')
+        return _t.global.globalIcons.getIcon('contentLock')
       }
     }
   }
@@ -79,7 +80,7 @@ export default class ContentLock {
     return {
       click: function (eve) {
         if (_t.figure.isPointInFigure(getPos(eve))) {
-          Global.GLOBAL.choosen.choose(_t.main)
+          _t.global.choosen.choose(_t.main)
           eve.stopPropagation()
         }
       }

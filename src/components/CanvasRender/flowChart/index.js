@@ -48,11 +48,23 @@ export default class ChartFlow {
   setOld (id, bool = true) {
     this.global.setOld(id, bool)
   }
+  setUnsave (id, bool = true) {
+    this.global.setUnsave(id, bool)
+  }
+  getOld () {
+    return this.global.getOld()
+  }
+  getUnsave () {
+    return this.global.getUnsave()
+  }
 
   getCurrentGlobal () {
     return this.global
   }
   setCurrentGlobal (global) {
+    if (this.global) {
+      this.global.moveoutFromParent()
+    }
     this.global = global || new Global()
     this.global.setIcons()
     this.global.setParent(this.dom)

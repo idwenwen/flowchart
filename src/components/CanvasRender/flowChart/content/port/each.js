@@ -91,7 +91,7 @@ export default class Port extends Tree {
       if ((this.type.match(/data/i) && type.match(/data/i)) ||
         (this.type.match(/model/i) && type.match(/model/i))) {
         if (!this.hasConnect && !this.root().isOld()) {
-          const sub = new LinkHint(this)
+          const sub = new LinkHint(this, this.global)
           this.root().addSub(sub.id, sub) // 添加当前的sub内容
         }
       }
