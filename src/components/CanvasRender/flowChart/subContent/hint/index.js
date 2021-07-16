@@ -135,11 +135,16 @@ export default class LinkHint extends Tree {
     for (const val of this.getChildren()) {
       val.clearUp()
     }
+    this.figure.release()
     this.main.root().removeSub(this.id)
     this.global.removeHint(this.id)
   }
 
   disRender () {
     this.main.root().panel.remove(this.panel)
+  }
+
+  release () {
+    this.clearUp()
   }
 }

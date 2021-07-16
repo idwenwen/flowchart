@@ -14,4 +14,8 @@ export default class Moving {
   getMove () {
     return this.moving
   }
+
+  release () {
+    this.moving = null
+  }
 }

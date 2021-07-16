@@ -322,6 +322,14 @@ class Figure extends Tree {
       false
     )
   }
+
+  release () {
+    super.release()
+    this.data && this.data.release()
+    this.drawPath && this.drawPath.release()
+    this.events && this.events.release()
+    this.animation && this.animation.release()
+  }
 }
 
 export default Figure

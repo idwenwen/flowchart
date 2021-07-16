@@ -78,7 +78,11 @@ class Tree {
 
   remove (child) {
     // 删除当前点子节点内容
-    return remove(this._children, (val) => val._uuid === child._uuid)
+    if (child) {
+      return remove(this._children, (val) => val._uuid === child._uuid)
+    } else {
+      this._children = []
+    }
   }
 
   /** **********************节点搜索方法**************************/
@@ -255,6 +259,17 @@ class Tree {
       }
     } catch (err) {
       void 0
+    }
+  }
+
+  release () {
+    const childList = this._children
+    this.remove()
+    each(childList)(val => {
+      val.release()
+    })
+    if (this._parent) {
+      this._parent = null
     }
   }
 }

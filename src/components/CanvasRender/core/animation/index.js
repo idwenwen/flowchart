@@ -206,6 +206,16 @@ class Animate {
       act.end()
     })
   }
+
+  release () {
+    this.context = null
+    const runningList = this.running.keys()
+    for (const val of runningList) {
+      this.end(val)
+    }
+    this.animations.clear()
+    this.running.clear()
+  }
 }
 
 export default Animate

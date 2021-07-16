@@ -201,4 +201,8 @@ export default class Port extends Tree {
       }
     }
   }
+  release () {
+    super.release()
+    this.global = null
+  }
 }

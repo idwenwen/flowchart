@@ -61,9 +61,12 @@ export default class ChartFlow {
   getCurrentGlobal () {
     return this.global
   }
-  setCurrentGlobal (global) {
+  setCurrentGlobal (global, willRelease = true) {
     if (this.global) {
       this.global.moveoutFromParent()
+    }
+    if (willRelease) {
+      this.global.release()
     }
     this.global = global || new Global()
     this.global.setIcons()

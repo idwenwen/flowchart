@@ -393,6 +393,24 @@ export class Global extends EventEmitter {
   getChoosen () {
     return this.choosen.choosen
   }
+
+  release () {
+    each(this.globalHint)(val => {
+      val.release()
+    })
+    this.globalHint.clear()
+    each(this.globalLinking)(val => {
+      val.release()
+    })
+    this.globalLinking.clear()
+    each(this.globalComp)(val => {
+      val.release()
+    })
+    this.globalComp.clear()
+
+    this.globalIcons.release()
+    this.globalPanel.release()
+  }
 }
 
 export default Global

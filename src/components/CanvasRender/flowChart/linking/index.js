@@ -225,6 +225,11 @@ class Linking extends Tree {
       this.end.closeConnect(this)
     }
   }
+
+  release () {
+    this.clearUp()
+    this.figure.release()
+  }
 }
 
 export default Linking

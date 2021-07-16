@@ -18,7 +18,6 @@ class Curve extends Tree {
     super()
     this.isDash = true
     this.figure = null
-    this.panel = null
     this.toRender()
   }
 

@@ -56,6 +56,8 @@ export default class SubIcon extends PanelOperation {
 
   destory () {
     this.img = null
+    this.diagram.release()
+    this.diagram = null
     this.panelManager = null
     this.connectTo = null
   }
@@ -63,5 +65,9 @@ export default class SubIcon extends PanelOperation {
   updatePostion (x, y) {
     this.panelManager.attr.point[0] += x
     this.panelManager.attr.point[1] += y
+  }
+
+  release () {
+    this.destory()
   }
 }

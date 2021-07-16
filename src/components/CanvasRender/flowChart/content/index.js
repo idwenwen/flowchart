@@ -511,4 +511,11 @@ export default class Component extends Tree {
   getPort (i, type, output) {
     return this.getChildren()[1].checkHint(i, type, output)
   }
+
+  release () {
+    super.release()
+    this.figure.release()
+    this.global = null
+    this.sub = null
+  }
 }

@@ -70,6 +70,12 @@ class Events {
       return false
     }
   }
+
+  // 释放当前的数据内容
+  release () {
+    this.context = null
+    this.eventsList.clear()
+  }
 }
 
 export default Events

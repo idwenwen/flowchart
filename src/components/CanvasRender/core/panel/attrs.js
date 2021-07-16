@@ -70,4 +70,9 @@ export default class Attributes {
     }
     return acquistion(this, defaultHandler)
   }
+
+  release () {
+    this.attrs && this.attrs['_origin_'] && this.attrs['_origin_'].release()
+    this.attrs = null
+  }
 }

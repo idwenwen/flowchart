@@ -63,7 +63,9 @@ class Parameter {
         if (keys.length > 0) {
         // 删除多余的展示内容。
           each(keys)((key) => {
-            delete _t.cache[key]
+            if (key !== '_origin_') {
+              delete _t.cache[key]
+            }
           })
         }
       } else {
@@ -133,6 +135,11 @@ class Parameter {
    */
   context (context) {
     this._imply.context(context)
+  }
+
+  release () {
+    this.cache && this.cache['_origin_'] && this.cache['_origin_'].release()
+    this._imply instanceof Watcher && this._imply.release()
   }
 }
 

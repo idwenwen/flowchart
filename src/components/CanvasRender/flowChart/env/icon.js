@@ -30,4 +30,8 @@ export default class Icons {
   getIcon (key) {
     return this.icons.get(key)
   }
+
+  release () {
+    this.icons.clear()
+  }
 }

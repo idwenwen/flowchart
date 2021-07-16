@@ -113,7 +113,7 @@ export default class BackendPanel {
   constructor (global, parent) {
     this.global = global
     this.events = null // 记录本身带生命周期的事件
-    this.emmiter = null // 自定义事件触发对象
+    this.emitter = null // 自定义事件触发对象
     this.render()
     this.setParent(parent)
     this.eventWorks()
@@ -178,7 +178,7 @@ export default class BackendPanel {
   }
   // 触发自定义事件
   eventDispatch (type) {
-    this.emmiter.dispatch(type)
+    this.emitter.dispatch(type)
   }
 
   getOrigin () {
@@ -186,5 +186,11 @@ export default class BackendPanel {
   }
   getCanvas () {
     return this.panel.dom
+  }
+  release () {
+    this.events = null
+    this.emitter.clearUp()
+    this.panel.release()
+    this.global = null
   }
 }

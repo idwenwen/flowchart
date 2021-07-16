@@ -109,6 +109,7 @@ class Observer {
       _ignore: ignore,
       _context: observed // 原映射对象
     })
+    this._context._origin_ = this
     this.observer = this.obser(this._context, this._ignore)
   }
 
@@ -163,6 +164,12 @@ class Observer {
   clear () {
     // 清除当前的订阅情况。
     this.dep.clear()
+  }
+
+  release () {
+    this.clear()
+    this.observer['_origin_'] = null
+    this.observer = null
   }
 }
 

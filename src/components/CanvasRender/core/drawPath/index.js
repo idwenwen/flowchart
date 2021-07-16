@@ -94,6 +94,10 @@ class DrawPath {
   getPath () {
     return this.drawPath.path
   }
+
+  release () {
+    this._origin = null
+  }
 }
 
 // 设置默认的绘制路径，路径内容从同层path之中获取

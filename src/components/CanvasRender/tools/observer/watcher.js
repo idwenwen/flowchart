@@ -73,6 +73,13 @@ class Watcher {
     this.deps = []
   }
 
+  release () {
+    this.clear()
+    this._context = null
+    this._callback = null
+    this.cache = null
+  }
+
   /**
    * 确定当前的dep的订阅关系
    */

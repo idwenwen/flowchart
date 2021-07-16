@@ -32,4 +32,8 @@ export default class Choosen {
       }
     }
   }
+
+  release () {
+    this.choose = null
+  }
 }

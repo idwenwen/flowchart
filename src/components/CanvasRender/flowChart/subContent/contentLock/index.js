@@ -104,8 +104,13 @@ export default class ContentLock {
 
   clearUp () {
     this.disRender()
+    this.figure.release()
     this.panel = null
     this.figure = null
+  }
+
+  release () {
+    this.clearUp()
   }
 
   disRender () {

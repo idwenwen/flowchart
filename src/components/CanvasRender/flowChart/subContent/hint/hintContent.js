@@ -40,4 +40,8 @@ export default class HintContent extends Tree {
     this.main = null
     this.figure = null
   }
+
+  release () {
+    this.clearUp()
+  }
 }

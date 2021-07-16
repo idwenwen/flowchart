@@ -36,6 +36,11 @@ class Diagram extends Figure {
   get panel () {
     return this._panel
   }
+
+  release () {
+    super.release()
+    this._panel.release()
+  }
 }
 
 export default Diagram

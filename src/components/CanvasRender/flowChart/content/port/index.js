@@ -131,4 +131,9 @@ export default class ContentPorts extends Tree {
     }
     return count
   }
+
+  release () {
+    super.release()
+    this.global = null
+  }
 }

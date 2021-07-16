@@ -57,6 +57,12 @@ class Styles extends Attributes {
     }
     return acquistion(this, defaultHandler)
   }
+
+  release () {
+    super.release()
+    this.cache && this.cache['_origin_'] && this.cache['_origin_'].release()
+    this.watching && this.watching.release()
+  }
 }
 
 export default Styles

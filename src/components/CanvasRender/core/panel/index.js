@@ -219,6 +219,21 @@ class Panel {
   getCanvas () {
     return this.dom
   }
+
+  release () {
+    this._attrs.release()
+    this._classes.release()
+    this._styles.release()
+    this.attrWatcher.release()
+    this.styleWatcher.release()
+    this.classWatcher.release()
+    this.diagram = null
+    if (this.domContainer.parentNode) {
+      this.domContainer.parentNode.removeChild(this.domContainer)
+    }
+    this.domContainer = null
+    this.dom = null
+  }
 }
 
 export default Panel
